@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <RootNamespace>Twime.Bar</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Library.fs" />
+        <Compile Include="Component.fs" />
+        <Compile Include="WindowList.fs" />
+        <Compile Include="TagList.fs" />
+        <Compile Include="Bar.fs" />
+        <Compile Include="Clock.fs" />
+        <Compile Include="DiscordStatus.fs" />
+        <Compile Include="NowPlaying.fs" />
+        <Compile Include="LayoutIndicator.fs" />
+        <Compile Include="Button.fs" />
+        <Compile Include="PerformanceCounter.fs" />
+        <Compile Include="Spacer.fs" />
+        <Compile Include="TrayButton.fs" />
+        <Compile Include="UiConfig.fs" />
+        <Compile Include="ComponentBasedBarConfig.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Elmish.WPF" Version="3.5.6" />
+      <PackageReference Include="System.Management" Version="4.7.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Core\Core.fsproj" />
+      <ProjectReference Include="..\Views\Views.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,38 @@
+﻿<Window x:Class="Views.ContainerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:Views"
+        mc:Ignorable="d"
+        Background="#2e3440"
+        Foreground="#d8dee9"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        FontFamily="Source Code Pro"
+        Title="ContainerWindow" Height="{Binding Height}" Width="{Binding Width}">
+        <Grid Margin="5">
+                <ItemsControl ItemsSource="{Binding Children}">
+                        <ItemsControl.ItemsPanel> 
+                                <ItemsPanelTemplate>
+                                        <UniformGrid Rows="1"></UniformGrid>
+                                </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                        <Border Name="Border">
+                                                <TextBlock Name="Text" Text="{Binding Name}" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                                        </Border>
+                                        <DataTemplate.Triggers>
+                                                <DataTrigger Binding="{Binding Active}" Value="True">
+                                                        <Setter Property="Background" TargetName="Border" Value="#4c566a"/>
+                                                        <Setter Property="Foreground" TargetName="Text" Value="#e5e9f0"/>
+                                                </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                </ItemsControl> 
+        </Grid>
+</Window>

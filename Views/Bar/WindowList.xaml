@@ -1,0 +1,44 @@
+﻿<local:TwimeBarComponent 
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             x:Class="Views.Bar.WindowList"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:c="clr-namespace:CalcBinding;assembly=CalcBinding"
+             xmlns:local="clr-namespace:Views.Bar"
+             xmlns:commands="clr-namespace:Views.Commands"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+        <UserControl.CommandBindings>
+                <CommandBinding Command="commands:TreeTransformationCommands.Transform" CanExecute="TreeTransform_CanExecute" Executed="TreeTransform_Executed"></CommandBinding>
+        </UserControl.CommandBindings>
+        <ItemsControl ItemsSource="{Binding Children}" HorizontalAlignment="Stretch" Name="ItemsControl">
+                <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"></StackPanel>
+                        </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                                <Border 
+                                        Name="Border" 
+                                        Padding="25 5 25 5" 
+                                        HorizontalAlignment="Stretch" 
+                                        Background="#4c566a" 
+                                        MaxWidth="{c:Binding ElementName=ItemsControl, Path=ActualWidth/Items.Count}">
+                                        <Border.InputBindings>
+                                                <MouseBinding MouseAction="LeftClick" Command="commands:TreeTransformationCommands.Transform" CommandParameter="{Binding Handle}"></MouseBinding>
+                                        </Border.InputBindings>
+                                        <TextBlock Name="Text" Text="{Binding Name}" HorizontalAlignment="Center" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Active}" Value="True">
+                                                <Setter Property="Background" TargetName="Border" Value="#5e81ac"/>
+                                                <Setter Property="Foreground" TargetName="Text" Value="#e5e9f0"/>
+                                        </DataTrigger>
+                                </DataTemplate.Triggers>
+                        </DataTemplate>
+                </ItemsControl.ItemTemplate>
+        </ItemsControl>
+</local:TwimeBarComponent>

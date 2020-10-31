@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="MaybeBuilder.fs" />
+        <Compile Include="Exceptions.fs" />
+        <Compile Include="LayoutTree\TreeReference.fs" />
+        <Compile Include="LayoutTree\Box.fs" />
+        <Compile Include="LayoutTree\Weight.fs" />
+        <Compile Include="LayoutTree\Window.fs" />
+        <Compile Include="LayoutTree\WindowHandle.fs" />
+        <Compile Include="LayoutTree\Container.fs" />
+        <Compile Include="LayoutTree\LayoutTree.fs" />
+        <Compile Include="LayoutTree\LayoutTreeWriter.fs" />
+        <Compile Include="LayoutTree\BeSameTreeAsConstraint.fs" />
+        <Compile Include="LayoutTree\Navigation\TreeNavigation.fs" />
+        <Compile Include="LayoutTree\Navigation\BasicNodeReferences.fs" />
+        <Compile Include="LayoutTree\Mutation\TreeManipulation.fs" />
+        <Compile Include="LayoutTree\Mutation\Weights.fs" />
+        <Compile Include="LayoutTree\Mutation\TreeMove.fs" />
+        <Compile Include="Layout\UIComponents\UIComponent.fs" />
+        <Compile Include="Layout\LayoutEngines.fs" />
+        <Compile Include="Layout\Layout.fs" />
+        <Compile Include="Layout\PostProcessors\PostProcessor.fs" />
+        <Compile Include="Layout\PostProcessors\GapsPostProcessor.fs" />
+        <Compile Include="Layout\PostProcessors\NoPostProcessor.fs" />
+        <Compile Include="Layout\PostProcessors\ChainPostProcessor.fs" />
+        <Compile Include="Layout\PostProcessors\OffsetPostProcessor.fs" />
+        <Compile Include="Layout\PostProcessors\ResizePostProcessor.fs" />
+        <Compile Include="Tree\Tag.fs" />
+        <Compile Include="Tree\Display.fs" />
+        <Compile Include="Tree\TwimeRoot.fs" />
+        <Compile Include="Tree\Tree.fs" />
+        <Compile Include="Tree\TwimeRootWriter.fs" />
+        <Compile Include="DirectionalNavigation\DirectionalNavigation.fs" />
+        <Compile Include="TreeOperations\TreeOperation.fs" />
+        <Compile Include="TreeOperations\TreeAddOperation.fs" />
+        <Compile Include="TreeOperations\TreeUpdateOperation.fs" />
+        <Compile Include="TreeOperations\TreeRemoveOperation.fs" />
+        <Compile Include="TreeOperations\TreeMoveOperation.fs" />
+        <Compile Include="TreeOperations\TreeSplitOperation.fs" />
+        <Compile Include="TreeOperations\TreeTagOperation.fs" />
+        <Compile Include="TreeOperations\TreeChangeWindowSettingOperation.fs" />
+        <Compile Include="TreeOperations\TreeFocusChangeOperation.fs" />
+        <Compile Include="TreeOperations\TreeDirectionalOperation.fs" />
+        <Compile Include="TreeOperations\LoadTreeOperation.fs" />
+        <Compile Include="TestCases\SecondaryMonitorWindowMoveTestCase.fs" />
+        <Compile Include="TestCases\SwitchingTagTestCase.fs" />
+        <Compile Include="UI\BarUI.fs" />
+        <Compile Include="UI\NoUI.fs" />
+        <Compile Include="UI\UI.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FsUnit" Version="3.8.1" />
+      <PackageReference Include="Microsoft.FSharpLu.Json" Version="0.11.6" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+      <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Logume\Logume.fsproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TWiME-PoC", "TWiME-PoC\TWiME-PoC.csproj", "{7112B288-3265-46B6-9FFD-0C4D5EC92059}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Core", "Core\Core.fsproj", "{BE55643E-54D1-4897-B8DE-F1BDCF4C1C4F}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Runner", "Runner\Runner.fsproj", "{29DE6F06-A416-43DE-946A-E6CE5FE3A599}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Integration", "Integration\Integration.fsproj", "{E18DAC5D-E87D-4330-B50A-45A168645308}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Views", "Views\Views.csproj", "{20DF44E1-830B-4A11-805B-69D96742157F}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Logume", "Logume\Logume.fsproj", "{F6A42E84-818E-4521-ABF5-9C0AA298BF31}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Twime-Bar", "Twime-Bar\Twime-Bar.fsproj", "{2F651BA8-0F51-410F-8DA6-68C37C7F00D0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7112B288-3265-46B6-9FFD-0C4D5EC92059}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7112B288-3265-46B6-9FFD-0C4D5EC92059}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7112B288-3265-46B6-9FFD-0C4D5EC92059}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7112B288-3265-46B6-9FFD-0C4D5EC92059}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE55643E-54D1-4897-B8DE-F1BDCF4C1C4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE55643E-54D1-4897-B8DE-F1BDCF4C1C4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE55643E-54D1-4897-B8DE-F1BDCF4C1C4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE55643E-54D1-4897-B8DE-F1BDCF4C1C4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29DE6F06-A416-43DE-946A-E6CE5FE3A599}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29DE6F06-A416-43DE-946A-E6CE5FE3A599}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29DE6F06-A416-43DE-946A-E6CE5FE3A599}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29DE6F06-A416-43DE-946A-E6CE5FE3A599}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E18DAC5D-E87D-4330-B50A-45A168645308}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E18DAC5D-E87D-4330-B50A-45A168645308}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E18DAC5D-E87D-4330-B50A-45A168645308}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E18DAC5D-E87D-4330-B50A-45A168645308}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20DF44E1-830B-4A11-805B-69D96742157F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20DF44E1-830B-4A11-805B-69D96742157F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20DF44E1-830B-4A11-805B-69D96742157F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20DF44E1-830B-4A11-805B-69D96742157F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6A42E84-818E-4521-ABF5-9C0AA298BF31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6A42E84-818E-4521-ABF5-9C0AA298BF31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6A42E84-818E-4521-ABF5-9C0AA298BF31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6A42E84-818E-4521-ABF5-9C0AA298BF31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F651BA8-0F51-410F-8DA6-68C37C7F00D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F651BA8-0F51-410F-8DA6-68C37C7F00D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F651BA8-0F51-410F-8DA6-68C37C7F00D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F651BA8-0F51-410F-8DA6-68C37C7F00D0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

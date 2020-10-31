@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <UseWPF>true</UseWPF>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Page Update="ContainerWindow.xaml">
+        <Generator></Generator>
+      </Page>
+      <Page Update="Bar\Bar.xaml">
+        <Generator></Generator>
+      </Page>
+      <Page Update="Bar\Clock.xaml">
+        <Generator></Generator>
+      </Page>
+      <Page Update="Bar\WindowList.xaml">
+        <Generator></Generator>
+      </Page>
+      <Page Update="Bar\Button.xaml">
+        <Generator></Generator>
+      </Page>
+      <Page Update="Bar\TagDisplay.xaml">
+        <Generator></Generator>
+      </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="ContainerWindow.xaml.cs">
+        <DependentUpon>ContainerWindow.xaml</DependentUpon>
+      </Compile>
+      <Compile Update="Bar\Bar.xaml.cs">
+        <DependentUpon>Bar.xaml</DependentUpon>
+      </Compile>
+      <Compile Update="Bar\Clock.xaml.cs">
+        <DependentUpon>Clock.xaml</DependentUpon>
+      </Compile>
+      <Compile Update="Bar\WindowList.xaml.cs">
+        <DependentUpon>WindowList.xaml</DependentUpon>
+      </Compile>
+      <Compile Update="Bar\Button.xaml.cs">
+        <DependentUpon>LayoutIndicator.xaml</DependentUpon>
+      </Compile>
+      <Compile Update="Bar\TagDisplay.xaml.cs">
+        <DependentUpon>TagDisplay.xaml</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CalcBinding" Version="2.5.2" />
+      <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+      <PackageReference Include="Microsoft.Windows.SDK.NET" Version="10.0.18362.6-preview" />
+    </ItemGroup>
+
+</Project>

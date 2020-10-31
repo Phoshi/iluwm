@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Win32\WindowSize.fs" />
+        <Compile Include="Win32\WindowVisibility.fs" />
+        <Compile Include="Win32\WindowState.fs" />
+        <Compile Include="Win32\WindowMetadata.fs" />
+        <Compile Include="Win32\WindowStyle.fs" />
+        <Compile Include="Win32\WindowListings.fs" />
+        <Compile Include="Win32\DwmInfo.fs" />
+        <Compile Include="Win32\WindowMove.fs" />
+        <Compile Include="Win32\MonitorList.fs" />
+        <Compile Include="Win32\CursorMove.fs" />
+        <Compile Include="Win32\Wallpaper.fs" />
+        <Compile Include="Rules\Rule.fs" />
+        <Compile Include="Rules\WindowsMustExist.fs" />
+        <Compile Include="Keystroke.fs" />
+        <Compile Include="Hotkey.fs" />
+        <Compile Include="HotkeyAction.fs" />
+        <Compile Include="Hook.fs" />
+        <Compile Include="MessagePump.fs" />
+        <Compile Include="Poller.fs" />
+        <Compile Include="RenderInstructions.fs" />
+        <Compile Include="EventRunner.fs" />
+        <Compile Include="Compositor.fs" />
+        <Compile Include="BatchRenderer.fs" />
+        <Compile Include="DebugRenderer.fs" />
+        <Compile Include="TestCases\CompositorFail.fs" />
+        <Compile Include="TabbedUI.fs" />
+        <Compile Include="ExecuteOperation.fs" />
+        <Compile Include="TreeOperations\LogOperation.fs" />
+        <Compile Include="Settings\Settings.fs" />
+        <Compile Include="Initialisation\DisplayInitialisation.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Core\Core.fsproj" />
+      <ProjectReference Include="..\Logume\Logume.fsproj" />
+      <ProjectReference Include="..\Twime-Bar\Twime-Bar.fsproj" />
+      <ProjectReference Include="..\Views\Views.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Elmish.WPF" Version="3.5.6" />
+      <PackageReference Include="FsUnit" Version="3.8.1" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+      <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+    </ItemGroup>
+
+</Project>
