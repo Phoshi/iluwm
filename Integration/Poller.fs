@@ -32,7 +32,9 @@ module public WindowTracker =
     let tracked handle =
         ( Window.Definition.create
             (DwmInfo.extendedWindowBorders handle)
+            Weight.init
             (WindowMetadata.title handle)
+            (WindowMetadata.executableName handle)
             (WindowState.isMinimised handle)
             (WindowState.isMaximised handle)
             (WindowState.isForeground handle)
@@ -83,9 +85,12 @@ module public WindowTracker =
         
     let public tracker lock log hotkeys eventRunner onNewWindow onDestroyedWindow onResizedWindow onRetitledWindow onMinimisedWindow onMaximisedWindow onActiveWindowChanged onActiveMonitorChange onBatchComplete onStartup =
         let _tracker state =
-            reassertHotkeys log eventRunner hotkeys
+            //reassertHotkeys log eventRunner hotkeys
             if state.firstRun then
                 onStartup()
+                
+                create state.windowList state.activeDisplay
+            else 
           
             let allWindows =
                  WindowList.allWindows ()

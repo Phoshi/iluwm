@@ -1,6 +1,7 @@
 ﻿namespace Logume
 
 open System
+open System.ComponentModel
 open System.Diagnostics
 
 type Context = {
@@ -13,6 +14,12 @@ type Message = {
     Gauges: (string * Object) list
     Time: DateTime
 }
+
+type LogLevel =
+    | Everything
+    | Verbose
+    | Errors
+    | Nothing
 
 type Log =
     | Trivial of Message

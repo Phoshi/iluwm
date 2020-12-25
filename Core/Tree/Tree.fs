@@ -104,8 +104,11 @@ module Tree =
                     
             mapDisplays fDisplay tree
             
-        Compact.deserialize string
-        |> redoRefs
+        try
+            Compact.deserialize string
+            |> redoRefs
+        with
+            _ -> None
         
         
     
@@ -118,8 +121,8 @@ module Tree =
         open FsUnit
         
         let rect x y w h = Box.create x y (x + w) (y + h)
-        let d name area tags = Display.create (TreeReference.create()) (Display.createMeta name area area false false) tags (List.item 0 tags |> Tag.ref)
-        let t name layout = Tag.create (TreeReference.create()) (Tag.createMeta name name None None) layout
+        let d name area tags = Display.create (TreeReference.create()) (Display.createMeta name area area true false) tags (List.item 0 tags |> Tag.ref)
+        let t name layout = Tag.create (TreeReference.create()) (Tag.createMeta name name None None GapConfig.none) layout
             
         [<TestFixture; Category "root">]
         type ``Given a full representative tree`` () =

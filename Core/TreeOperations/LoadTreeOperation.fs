@@ -36,7 +36,7 @@ module LoadTreeOperation =
             |> List.filter (fun w -> List.contains w newWindows)
             
         Tree.apply
-            (missingWindows |> List.map Window.definition |> List.map (TreeAddOperation.addAfterActiveWindow (Logger.squash)))
+            (missingWindows |> List.map Window.definition |> List.map (TreeAddOperation.addAfterActiveWindow))
             newTree
         
     let load (treeToLoad: TwimeRoot.T) currentTree =

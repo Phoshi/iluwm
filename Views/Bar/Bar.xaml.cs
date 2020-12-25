@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
@@ -31,17 +32,17 @@ namespace Views.Bar
 
         public void SetItems(IEnumerable<TwimeBarComponent> elems)
         {
-            CloseComponents();
-            Items.Clear();
-            foreach (var component in elems)
-            {
-                Items.Add(component);
-            }
-
-            foreach (var component in Items)
+            var twimeBarComponents = elems.ToList();
+            
+            foreach (var component in twimeBarComponents)
             {
                 component.Attached(this);
             }
+
+            CloseComponents();
+
+            Items = new ObservableCollection<TwimeBarComponent>(twimeBarComponents);
+            BarItems.ItemsSource = Items;
         }
 
         private void Bar_OnLoaded(object sender, RoutedEventArgs e)

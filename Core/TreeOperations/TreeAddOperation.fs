@@ -1,17 +1,25 @@
 ﻿namespace Twime
+open System.ComponentModel
 open Logume
+open Twime.TreeOperation
 open TreeManipulation
 open BasicNodeReferences
 open LayoutTree
 open TreeNavigation
 
 module TreeAddOperation =
-    let private addAfterWindow (finder: TreeNavigation.NodeReference) (w: Window.Definition.T) t =
-        withLayout t { return! addChild (afterNode finder) (byChild finder) (LayoutTree.window w) }
+    let private addAfterWindow (finder: NodeReference) (w: Window.Definition.T) t =
+        withLayout t {
+            let! container = find (byChild finder)
+            if container |> containerDefinition |> Option.map Container.exclusive |> Option.defaultValue false then
+                return! addChild (afterNode (byChild finder)) (byGrandchild finder) (window w)
+            else 
+                return! addChild (afterNode finder) (byChild finder) (window w)
+        }
         
     let private _addToDisplayRoot w =
         Display.mapActiveTag
-            (Tag.map (addChild toEnd rootNode (LayoutTree.window w)))
+            (Tag.map (addChild toEnd rootNode (window w)))
             
     let private displayContainsWindow (w: Window.Definition.T) (d: Display.T) =
         Box.contains (Box.midpoint w.size) d.Meta.WorkArea
@@ -38,7 +46,7 @@ module TreeAddOperation =
                 root
         else None
         
-    let addAfterActiveWindow log (w: Window.Definition.T) root =
+    let addAfterActiveWindow (w: Window.Definition.T) root =
         if Tree.hasDisplay (Display.activeLayoutHas (exists byLastActiveWindow)) root then 
             Tree.mapLayout
                 (exists byLastActiveWindow)
@@ -64,3 +72,71 @@ module TreeAddOperation =
             Some tree
         else
             None
+            
+    let addAndSplitActiveWindow (ratio: float32) (w: Window.Definition.T) =
+        let splitWithNewWindow (activeWindow: T) =
+            let weight = Weights.weight activeWindow
+            let adjustedWeight = Weight.divide ratio weight
+            let adjustedWindow =
+                {w with weight = adjustedWeight; ignoreForHigherOrderLayout = true}
+            let size =
+                windows activeWindow
+                |> List.tryHead
+                |> Option.map (fun w -> w.Definition.size)
+                
+            let direction =
+                size
+                |> Option.map (fun s -> if Box.width s > Box.height s then "horizontal" else "vertical")
+                |> Option.defaultValue "horizontal"
+                
+            container
+                (Container.create direction |> Container.withExclusive true)
+                [activeWindow; window adjustedWindow]
+            
+        Tree.mapDisplay
+            hasLastActiveWindow
+            (Display.mapActiveLayout
+                 (replaceNode byLastActiveWindow splitWithNewWindow))
+
+    type SidebarSide = SidebarLeft | SidebarRight
+    let addToSidebarOnDisplay side display (w: Window.Definition.T) =
+        let (sidebarF, restF, mergeF) =
+            match side with
+            | SidebarLeft -> (List.tryHead, List.tail, fun s r -> s @ r)
+            | SidebarRight -> (List.tryLast, (fun l -> List.take (List.length l - 1) l), (fun s r -> r @ s))
+            
+        let sidebarWindow root =
+            let rootInfo =
+                containerDefinition root
+                |> Option.defaultValue (Container.create "horizontal")
+            let children = TreeNavigation.children root
+            
+            let potentialExistingSidebar =
+                children
+                |> sidebarF
+                |> Option.filter (fun n -> containerDefinition n |> Option.exists (fun c -> c.LayoutEngine = "vertical"))
+                
+            match potentialExistingSidebar with
+            | Some sidebar ->
+                let modifiedSidebar =
+                    addChild toEnd byRoot (window w) sidebar
+                    |> Option.map List.singleton
+                    |> Option.defaultValue [sidebar; (window w)]
+                container
+                    rootInfo
+                    (mergeF modifiedSidebar (children |> restF))
+            | None ->
+                let sidebar =
+                    container
+                        (Container.create "vertical" |> Container.intransient |> Container.withExclusive true)
+                        [window w]
+                    
+                container
+                    rootInfo
+                    (mergeF [sidebar] children)
+                
+        Tree.mapDisplay
+            (fun d -> d.Meta.Name = display)
+            (Display.mapActiveLayout
+                 (replaceNode byRoot sidebarWindow))
+        

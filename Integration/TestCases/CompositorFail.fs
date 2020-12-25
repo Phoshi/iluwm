@@ -346,7 +346,7 @@ let testCase = Compact.deserialize """
 
 [<Test>]
 let ``Test case should correctly composit`` () =
-    let compositor = Compositor.composit 50 NoUI.ui (Twime.LayoutPostProcessors.NoPostProcessor.postprocess) (Twime.LayoutPostProcessors.NoPostProcessor.postprocess) ()
+    let compositor = Compositor.composit 50 (0,0) (Some Box.zero) NoUI.ui (Twime.LayoutPostProcessors.NoPostProcessor.postprocess) (Twime.LayoutPostProcessors.NoPostProcessor.postprocess) ()
     
     testCase
     |> TreeTagOperation.setActiveTag "2"

@@ -38,21 +38,26 @@ module WindowMove =
             | SWP_NOZORDER = 0x0004u
             | SWP_SHOWWINDOW = 0x0040u
             
+        type ZIndex =
+            | TopMost = -1 
+            | NotTopMost = -2 
+            
         let moveFlags =
             Flags.SWP_NOZORDER ||| Flags.SWP_NOACTIVATE ||| Flags.SWP_NOCOPYBITS
             |> uint32
         
         let showFlags = Flags.SWP_SHOWWINDOW |> uint32
         let hideFlags = Flags.SWP_HIDEWINDOW |> uint32
+        let topmostFlags = Flags.SWP_NOMOVE ||| Flags.SWP_NOSIZE ||| Flags.SWP_NOACTIVATE ||| Flags.SWP_NOCOPYBITS |> uint32
         
         let beginBatch n = BeginDeferWindowPos(n) |> create
         let endBatch t = EndDeferWindowPos(handle t)
         
-        let _batch flags t windowHandle box =
+        let _batch flags (zindex: ZIndex) t windowHandle box =
             DeferWindowPos(
                               handle t,
                               WindowHandle.ptr windowHandle,
-                              IntPtr.Zero,
+                              IntPtr (int zindex),
                               Box.left box,
                               Box.top box,
                               Box.width box,
@@ -61,9 +66,11 @@ module WindowMove =
                           )
             |> create
             
-        let batchMove = _batch moveFlags
-        let batchHide = _batch hideFlags 
-        let batchShow = _batch showFlags
+        let batchMove = _batch moveFlags ZIndex.NotTopMost
+        let batchHide = _batch hideFlags ZIndex.NotTopMost
+        let batchShow = _batch showFlags ZIndex.NotTopMost
+        let batchTopMost = _batch topmostFlags ZIndex.TopMost
+        let batchNotTopMost = _batch topmostFlags ZIndex.NotTopMost
         
         
     [<AutoOpen>]
@@ -117,7 +124,7 @@ module WindowMove =
         Box.create
             ((Box.left pos) + leftOffset)
             ((Box.top pos) + topOffset)
-            ((Box.right pos) + rightOffset)
+            ((Box.right pos) + rightOffset + 1)
             ((Box.bottom pos) + bottomOffset)
             
     
@@ -131,6 +138,17 @@ module WindowMove =
             batch <- batchHide batch (WindowHandle.fromWindow win) (win.size)
             
         endBatch batch |> ignore
+        
+    let batchSetTopmost (top: Window.Definition.T list) (notTop: Window.Definition.T list) =
+        let mutable batch = beginBatch ((List.length top) + (List.length notTop))
+        
+        for win in top do
+            batch <- batchTopMost batch (WindowHandle.fromWindow win) (win.size)
+            
+        for win in notTop do
+            batch <- batchNotTopMost batch (WindowHandle.fromWindow win) (win.size)
+            
+        endBatch batch |> ignore
             
     let move (w: Window.Definition.T) box =
         moveWindow
@@ -141,7 +159,6 @@ module WindowMove =
         let mutable batch = beginBatch (List.length windows)
         
         for (win, pos) in windows do
-            enterSizeMove (WindowHandle.fromWindow win)
             batch <- batchMove batch (WindowHandle.fromWindow win) (adjustForInvisibleBorders win pos)
             
         endBatch batch |> ignore

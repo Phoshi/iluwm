@@ -11,13 +11,15 @@ open Twime.TreeRemoveOperation
 open Twime.TreeUpdateOperation
 open Twime.TreeTagOperation
 open Twime.TreeFocusChangeOperation
+open Twime.SpecialCaseAwareOperation
 open Twime.LayoutPostProcessors
 open Integration.TreeOperations.LogOperation
+open IPC
 open EventRunner
 
 
 let execute (settings: Settings.T) =
-    let loggerFor = Logger.log settings.workingDirectoryPath
+    let loggerFor = Logger.log settings.workingDirectoryPath settings.logLevel
     
     let handlerFromConfig handler otherwise firstOf =
         let configured = settings.windowEventHandlers
@@ -35,7 +37,8 @@ let execute (settings: Settings.T) =
                     ignoreIfAlreadyOnActiveTag
                     switchToTagIfWindowAlreadyExists
                     logWindow "New window" (loggerFor "LogWindow")
-                    addAfterActiveWindow (loggerFor "LogWindow")
+                    handleSpecialCases settings.specialCases
+                    addAfterActiveWindow 
                     logWindow "Couldn't find active window..." (loggerFor "LogWindow")
                     addToRootOfClosestDisplay
                     logWindow "Couldn't even find active display..." (loggerFor "LogWindow")
@@ -48,6 +51,7 @@ let execute (settings: Settings.T) =
             (fun weh -> weh.destroyed)
             (firstOf {
                 leaveWindowIfOnlyOnInactiveTag
+                leaveWindowIfInZen
                 logWindow "Destroyed window" (loggerFor "LogWindow")
                 removeWindow
             })
@@ -94,7 +98,7 @@ let execute (settings: Settings.T) =
             (fun weh -> weh.activeChanged)
             (firstOf {
                 logWindow "Active window change" (loggerFor "LogWindow")
-                updateTree [(updateWindowActive); (updateWindowLastActive)]
+                updateTree [(updateWindowActive); (updateWindowLastActive); (updateSelected)]
             })
             firstOf
         
@@ -161,17 +165,23 @@ let execute (settings: Settings.T) =
                         onActiveDisplayChange,
                         Compositor.composit
                             settings.uiSize
+                            (1280, 1280)
+                            (settings.gaps |> Option.bind (fun g -> g.outer))
                             settings.uiType
                             (settings.postProcessors
                              |> Option.bind (fun pp -> pp.window)
-                             |> Option.orElse (settings.gaps |> Option.bind (fun g -> g.inner) |> Option.map GapsPostProcessor.postprocess)
+                             |> Option.orElse (settings.gaps |> Option.bind (fun g -> g.inner) |> Option.map (fun gapMax -> GapsPostProcessor.postprocessScaling PostProcessor.ProcessingStyle.Window (settings.gaps |> Option.bind (fun g -> g.innerMin) |> Option.defaultValue gapMax) gapMax))
                              |> Option.defaultValue NoPostProcessor.postprocess)
                             (settings.postProcessors
                              |> Option.bind (fun pp -> pp.ui |> Option.orElse pp.window)
-                             |> Option.orElse (settings.gaps |> Option.bind (fun g -> g.inner) |> Option.map (fun b -> Box.create (Box.left b) 0 (Box.right b) 0) |> Option.map GapsPostProcessor.postprocess)
+                             |> Option.orElse (settings.gaps |> Option.bind (fun g -> g.inner) |> Option.map (fun b -> Box.create (Box.left b) 0 (Box.right b) 0) |> Option.map (GapsPostProcessor.postprocess PostProcessor.ProcessingStyle.UI))
                              |> Option.defaultValue NoPostProcessor.postprocess)
                         ,
-                        (BatchRenderer.render (loggerFor "Renderer") settings.uiConfig (BatchRenderer.Settings.create true BatchRenderer.Settings.Batch))
+                        (BatchRenderer.render
+                             (loggerFor "Renderer")
+                             settings.workingDirectoryPath
+                             settings.uiConfig
+                             (BatchRenderer.Settings.create true BatchRenderer.Settings.Batch))
                         )
    
     let app = WpfRigging.beginWpf ()
@@ -193,6 +203,21 @@ let execute (settings: Settings.T) =
                         eventRunner.batchComplete
                         eventRunner.forceRender)
                      50.0
+                     
+    NamedPipeIPCServer.runIpcServer
+        (loggerFor "iluwmipc")
+        "iluwmipc"
+        (NamedPipeIPCServer.handleIncomingCommand
+            (settings.hotkeys)
+            (eventRunner.transformAsync UserDriven))
+    |> ignore
+    
+    NamedPipeIPCServer.runIpcServer
+        (loggerFor "iluwmipcquery")
+        "iluwmipcquery"
+        (NamedPipeIPCServer.handleIncomingQuery
+            (settings.hotkeys))
+    |> ignore
                      
     WpfRigging.runWpf app |> ignore
                      

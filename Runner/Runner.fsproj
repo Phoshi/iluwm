@@ -4,6 +4,7 @@
         <OutputType>WinExe</OutputType>
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <UseWpf>true</UseWpf>
+        <AssemblyName>iluwm</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,12 +25,14 @@
     <ItemGroup>
       <ProjectReference Include="..\Core\Core.fsproj" />
       <ProjectReference Include="..\Integration\Integration.fsproj" />
+      <ProjectReference Include="..\IPC\IPC.fsproj" />
       <ProjectReference Include="..\Views\Views.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Elmish.WPF" Version="3.5.6" />
-      <PackageReference Include="FSharp.Compiler.Service" Version="37.0.0" />
+      <PackageReference Include="FSharp.Compiler.Service" Version="38.0.0" />
+      <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.8.0" />
       <PackageReference Include="Microsoft.FSharpLu.Json" Version="0.11.6" />
     </ItemGroup>
 

@@ -94,6 +94,22 @@ module TreeTagOperation =
             createTagIfNotExists tag
             _moveActiveWindowToTag
         ]
+        
+    let moveSelectionToTag tag =
+        let _moveSelectionToTag root = 
+            let tagLayout =
+                root
+                |> TwimeRoot.display (Display.anyTagHas (Tag.byTagName tag))
+                |> Display.tag (Tag.byTagName tag)
+                |> Tag.layout
+                |> byExactNode
+                
+            moveNodeBetweenLayouts bySelection tagLayout toEnd root
+            
+        Tree.apply [
+            createTagIfNotExists tag
+            _moveSelectionToTag
+        ]
             
     let setActiveTag tag =
         Tree.apply
@@ -106,6 +122,19 @@ module TreeTagOperation =
                     
                 destroyInactiveEmptyTags
                 setFocusToWindowIn tag
+            ]
+            
+    let addToTag tag (w: Window.Definition.T) =
+        let _addWindowToTag root =
+            Tree.mapTag
+                (Tag.byTagName tag)
+                (Tag.map (addChild toEnd byRoot (LayoutTree.window w)))
+                root
+                
+        Tree.apply
+            [
+                createTagIfNotExists tag
+                _addWindowToTag
             ]
                             
     let switchToTagIfWindowAlreadyExists (window: Window.Definition.T) root =
@@ -130,8 +159,8 @@ module TreeTagOperation =
             let root =
                 let activeTag = C [A "Firefox"]
                                 |> mkTree
-                                |> Tag.create (TreeReference.create ()) (Tag.createMeta "1" "1" None None)
-                let passiveTag = C [] |> mkTree |> Tag.create (TreeReference.create ()) (Tag.createMeta "2" "2" None None)
+                                |> Tag.create (TreeReference.create ()) (Tag.createMeta "1" "1" None None GapConfig.none)
+                let passiveTag = C [] |> mkTree |> Tag.create (TreeReference.create ()) (Tag.createMeta "2" "2" None None GapConfig.none)
                 
                 TwimeRoot.create [
                     Display.create

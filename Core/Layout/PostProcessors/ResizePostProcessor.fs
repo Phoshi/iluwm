@@ -11,7 +11,7 @@ module ResizePostProcessor =
             (Box.right box - right)
             (Box.bottom box - bottom)
             
-    let postprocess a _ seed box =
+    let postprocess a _ _ seed box =
         let rand = Random(seed + "resize".GetHashCode())
         let leftOffset = rand.Next(0, a)
         let topOffset = rand.Next(0, a)

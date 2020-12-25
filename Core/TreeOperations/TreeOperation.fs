@@ -36,11 +36,31 @@ module TreeOperation =
     let hasActiveWindow =
         hasWindow BasicNodeReferences.byActiveWindow
         
+    let hasLastActiveWindow =
+        hasWindow BasicNodeReferences.byLastActiveWindow
+        
+    let hasSelection =
+        hasWindow BasicNodeReferences.bySelection
+        
     let activeDisplay =
         TwimeRoot.display
             hasActiveWindow
     
     let moveNodeBetweenLayouts (sourceNode: NodeReference) (destination: NodeReference) (position: AddPosition) root =
+        let _removeOldNode node layout =
+            let parentLayout =
+                root
+                |> TwimeRoot.display (Display.anyTagHas (Tag.layoutHas (exists node)))
+                |> Display.activeLayout
+                
+            if node parentLayout then
+                let contInfo =
+                    LayoutTree.containerDefinition parentLayout
+                    |> Option.defaultValue (Container.create "horizontal")
+                TreeManipulation.replaceNode node (fun _ -> LayoutTree.container contInfo []) layout
+            else
+                TreeManipulation.removeNode node layout
+            
         maybe {
             let! window =
                 root
@@ -52,7 +72,7 @@ module TreeOperation =
             let! newTree = Tree.mapDisplay
                             (Display.anyTagHas (Tag.layoutHas (exists sourceNode)))
                             (Display.mapActiveLayout
-                                 (TreeManipulation.removeNode sourceNode))
+                                 (_removeOldNode sourceNode))
                             root
                             
             return! Tree.mapDisplay

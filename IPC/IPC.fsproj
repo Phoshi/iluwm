@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Include="ConfigurationBindings.fs" />
+      <Compile Include="CommandBinding.fs" />
+      <Compile Include="CommandBindings.fs" />
+      <Compile Include="Parse.fs" />
+      <Compile Include="NamedPipeIPCServer.fs" />
+      <Compile Include="NamedPipeIPCClient.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Core\Core.fsproj" />
+      <ProjectReference Include="..\Integration\Integration.fsproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FsUnit" Version="3.8.1" />
+      <PackageReference Include="Microsoft.FSharpLu.Json" Version="0.11.6" />
+      <PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+    </ItemGroup>
+
+</Project>

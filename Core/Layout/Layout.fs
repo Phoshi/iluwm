@@ -30,7 +30,9 @@ module Layout =
         
     type LayoutPiece =
         | Window of Window.T * Box.T
+        | Container of Container.T * Box.T
         | UI of UIComponent.T list
+        
     let rec _layout uiSize ui boundSize containerRef tree : LayoutPiece list option =
         withLayout tree {
             let! (layoutEngine, containerUi) = engine uiSize ui boundSize containerRef
@@ -44,9 +46,10 @@ module Layout =
                      | WindowNode (_, wi) ->
                          let (box) = layoutEngine i tree |> Option.get
                          Some [Window (wi, box)]
-                     | ContainerNode _ ->
+                     | ContainerNode (_, ci, _) ->
                          let (box) = layoutEngine i tree |> Option.get
-                         _layout uiSize ui box (byExactNode child) tree 
+                         _layout uiSize ui box (byExactNode child) tree
+                         |> Option.map (fun pieces -> Container (ci, box) :: pieces)
             }
             
             return layout
@@ -69,8 +72,8 @@ module Layout =
             LayoutPiece.Window
                 (Window.create
                      name
-                     weight
-                     (Window.Definition.create Box.zero name false false false WindowHandle.none),
+                     (Window.Definition.create Box.zero weight name "" false false false WindowHandle.none),
+                     
                      size
                 )
         let win name size = winWithWeight name Weight.init size

@@ -1,14 +1,45 @@
 ﻿namespace Twime
 
-open System.IO
+module GapConfig = 
+    type T = {
+        max: Box.T option
+        min: Box.T option
+        outer: Box.T option
+        enable: bool
+    }
+    
+    let min t = t.min
+    let max t = t.max
+    let enabled t = t.enable
+    
+    let withEnabled enabled t =
+        {t with enable = enabled}
+        
+    let withMax gap t =
+        {t with max = gap}
+        
+    let withOuter gap t =
+        {t with outer = gap}
+    
+    let create max min outer on =
+        {
+         max = max
+         min = min
+         outer = outer
+         enable = on
+        }
+        
+    let none = create None None None true
 
 module Tag =
+    
     [<StructuredFormatDisplay "(Meta {Name})">]
     type Meta = {
         Name: string
         DisplayName: string
         Icon: string option
         Wallpaper: string option
+        GapConfig: GapConfig.T
     }
     type T =
          {Reference: TreeReference.T; Meta: Meta; Layout: LayoutTree.T}
@@ -20,12 +51,17 @@ module Tag =
     let displayName t = t.Meta.DisplayName
     let wallpaper t = t.Meta.Wallpaper
     
-    let createMeta name displayname icon wallpaper =
+    let gapConfig t = t.Meta.GapConfig
+    let withGapConfig conf t =
+        {t with Meta = {t.Meta with GapConfig = conf}}
+    
+    let createMeta name displayname icon wallpaper gapConfig =
         {
             Name = name
             DisplayName = displayname
             Icon = icon
             Wallpaper = wallpaper
+            GapConfig = gapConfig
         }
         
     let metaWithIcon icon meta =

@@ -52,6 +52,9 @@ module Hotkey =
         | Down
         | Left
         | Right
+        | Tab
+        | Delete
+        | Mod of T
         | Shift of T
         | Control of T
         | Alt of T
@@ -61,6 +64,7 @@ module Hotkey =
         
     let rec toKeyStroke (t: T): Keystroke.T list =
         match t with
+        | Mod andKey -> Keystroke.T.F24 :: toKeyStroke andKey
         | Shift andKey -> Keystroke.T.LShiftKey :: toKeyStroke andKey
         | Control andKey -> Keystroke.T.LControlKey :: toKeyStroke andKey
         | Alt andKey -> Keystroke.T.Alt :: toKeyStroke andKey

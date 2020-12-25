@@ -22,18 +22,41 @@ module DirectionalNavigation =
         | Horizontal
         | Vertical
     
-    let windowLayout piece =
+//    let windowLayout piece =
+//        match piece with
+//        | LayoutPiece.Window (w, b) -> Some (w, b)
+//        | _ -> None
+        
+    let window piece =
         match piece with
-        | LayoutPiece.Window (w, b) -> Some (w, b)
+        | LayoutPiece.Window (w, _) -> Some w
         | _ -> None
         
-    let isPieceFor (node: LayoutTree.T) (piece: LayoutPiece) =
+    let onlyWindows pieces =
+        pieces
+        |> List.filter (fun p -> window p |> Option.isSome)
+        
+    let container piece =
+        match piece with
+        | LayoutPiece.Container (c, _) -> Some c
+        | _ -> None
+        
+    let layoutBox piece =
+        match piece with
+        | LayoutPiece.Container (_, b) -> Some b
+        | LayoutPiece.Window (_, b) -> Some b
+        | _ -> None
+        
+    let isPieceFor (node: T) (piece: LayoutPiece) =
         match node with
-        | LayoutTree.T.WindowNode (_, win) -> 
+        | T.WindowNode (_, win) -> 
             match piece with
-            | UI _ -> false
             | LayoutPiece.Window (w, _) -> w = win
-        | _ -> false
+            | _ -> false
+        | T.ContainerNode (_, cont, _) ->
+            match piece with
+            | LayoutPiece.Container (c, _) -> c = cont
+            | _ -> false
     
     let targetPoint d start =
         match d with
@@ -46,18 +69,18 @@ module DirectionalNavigation =
         match piece with
         | UI _ -> false
         | LayoutPiece.Window (_, p) -> Box.contains point p
+        | LayoutPiece.Container (_, p) -> Box.contains point p
         
     let windowAtPoint point positions =
         positions
         |> List.tryFind (isPositionIn point)
-        |> Option.map windowLayout
+        |> Option.map window
         |> Option.flatten
-        |> Option.map (fun (w, _) -> w)
         
     let windowsInDirection direction start (positions: LayoutPiece list) =
         let windowInDirection layoutPiece =
-            match windowLayout layoutPiece with
-            | Some (_, position) ->
+            match layoutBox layoutPiece with
+            | Some position ->
                 if direction = Up then
                     Box.right position >= Box.left start
                     && Box.left position <= Box.right start
@@ -76,8 +99,8 @@ module DirectionalNavigation =
                     && Box.right position <= Box.left start
             | _ -> false
         let notSameWindow layoutPiece =
-            match windowLayout layoutPiece with
-            | Some (_, position) ->
+            match layoutBox layoutPiece with
+            | Some position ->
                 not (position = start)
             | _ -> true
         positions
@@ -87,20 +110,19 @@ module DirectionalNavigation =
     let closestWindow start (contenders: LayoutPiece list) tree =
         let anyContenderIsLastActive contenders lastActive =
             contenders
-            |> List.map windowLayout
-            |> List.map (Option.map (fun (w, _) -> w))
+            |> List.map window
             |> List.collect Option.toList
             |> List.exists ((=)lastActive)
             
         let lastActiveOfParentIfAnyExists contenders lp =
-            match windowLayout lp with
-            | Some (win, _) ->
+            match window lp with
+            | Some (win) ->
                 withLayout tree {
-                    let! node = TreeNavigation.find (BasicNodeReferences.byWindow win)
+                    let! node = find (BasicNodeReferences.byWindow win)
                     let! parent = TreeNavigation.parent node
                     
                     let lastActiveChild =
-                        LayoutTree.containerDefinition parent
+                        containerDefinition parent
                         |> Option.map Container.lastActiveChild
                         |> Option.flatten
                     
@@ -108,9 +130,9 @@ module DirectionalNavigation =
                         return Some true
                     else
                         let lastActive = Option.get lastActiveChild
-                        let! lastActiveNode = TreeNavigation.find (BasicNodeReferences.byRef lastActive)
+                        let! lastActiveNode = find (BasicNodeReferences.byRef lastActive)
                         let lastActiveWindow =
-                            LayoutTree.windows lastActiveNode
+                            windows lastActiveNode
                             |> List.tryHead
                             
                         if Option.isNone lastActiveWindow then
@@ -124,8 +146,8 @@ module DirectionalNavigation =
             | _ -> true
             
         let distanceFrom point layoutPiece =
-            match windowLayout layoutPiece with
-            | Some (_, otherPoint) ->
+            match layoutBox layoutPiece with
+            | Some (otherPoint) ->
                 let hDistance =
                     Box.horizontalMidpoint point - Box.horizontalMidpoint otherPoint
                     |> float
@@ -159,13 +181,12 @@ module DirectionalNavigation =
         orderedEligableContenders
         |> List.where (lastActiveOfParentIfAnyExists orderedEligableContenders)
         |> List.tryHead
-        |> Option.map windowLayout
+        |> Option.map window
         |> Option.flatten
-        |> Option.map (fun (w, _) -> w)
         
     let windowInDirection referencePoint direction (positions: LayoutPiece list) tree =
-        let (_, startRect) = positions |> List.find (isPieceFor referencePoint) |> windowLayout |> Option.get
-        let contenders = windowsInDirection direction startRect positions
+        let startRect = positions |> List.find (isPieceFor referencePoint) |> layoutBox |> Option.get
+        let contenders = windowsInDirection direction startRect (positions |> onlyWindows)
         
         closestWindow startRect contenders tree
         
@@ -182,21 +203,21 @@ module DirectionalNavigation =
                 return windowInDirection referencePoint direction positions tree
             else
                 let newPosition =
-                    positionInChildren + (match direction with | Left -> -1 | Right -> 1)
+                    positionInChildren + (match direction with | Left -> -1 | _ -> 1)
                     
-                return List.item newPosition siblings |> LayoutTree.windows |> List.head |> Some
+                return List.item newPosition siblings |> windows |> List.head |> Some
                     
         }
         
         
-    let windowTo (layout: LayoutTree.T -> LayoutPiece list option) direction start tree =
+    let windowTo (layout: T -> LayoutPiece list option) direction start tree =
         withLayout tree {
             let! subject = find start
             let! container = parent subject
             let! windowPositions = layout
             
             let target =
-                match LayoutTree.layoutEngine container with
+                match layoutEngine container with
                 | "tabbed" ->
                     if direction = Left || direction = Right then
                         windowInTabbedContainer subject direction windowPositions tree
@@ -223,7 +244,7 @@ module DirectionalNavigation =
                 | WindowNode (_, w) -> Some w
                 | _ -> None
                 
-            TreeNavigation.find (byName name) tree
+            find (byName name) tree
             |> Option.get
             |> extractWindow
             |> Option.map Window

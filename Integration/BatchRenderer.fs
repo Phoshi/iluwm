@@ -62,14 +62,6 @@ module BatchRenderer =
         | EventRunner.LowPriority -> true
         | _ -> false
         
-    type TempDC = {
-        Children: Child list
-    }
-    and Child = {
-        Name: string
-        Active: bool 
-    }
-    
     let exec (f: unit -> unit) =
          Application.Current.Dispatcher.Invoke(f)
     
@@ -138,7 +130,8 @@ module BatchRenderer =
     let changed windows =
         windows
         |> RenderInstructions.visibleWindows
-        |> List.filter (fun (w, p) -> w.Definition.size <> p)
+        |> List.filter (fun (w, _) -> not w.Definition.floating)
+        |> List.filter (fun (w, p) -> (DwmInfo.extendedWindowBorders (WindowHandle.fromWindow w.Definition)) <> p)
         |> List.filter (fun (w, _) -> not (WindowState.isMaximised (WindowHandle.fromWindow w.Definition)))
         |> List.map (fun (w, p) -> (w.Definition, p))
         
@@ -153,6 +146,18 @@ module BatchRenderer =
         |> RenderInstructions.invisibleWindows
         |> List.filter (fun (w) ->  (WindowState.isVisible (WindowHandle.fromWindow w.Definition)))
         |> List.map (fun w -> w.Definition)
+        
+    let floating windows =
+        windows
+        |> RenderInstructions.visibleWindows
+        |> List.filter (fun (w, _) -> w.Definition.floating)
+        |> List.map (fun (w, p) -> w.Definition)
+        
+    let nonfloating windows =
+        windows
+        |> RenderInstructions.visibleWindows
+        |> List.filter (fun (w, _) -> not w.Definition.floating)
+        |> List.map (fun (w, p) -> w.Definition)
         
     let individualUpdateWindows log windows =
         Message.message "Rendering changes"
@@ -178,13 +183,17 @@ module BatchRenderer =
             (visible windows)
             (invisible windows)
             
+        WindowMove.batchSetTopmost
+            (floating windows)
+            (nonfloating windows)
+            
         WindowMove.batchMove
             (changed windows)
         
             
-    let render log conf (settings: Settings.T) (submitCommand: EventRunner.Run) (updateType: EventRunner.UpdateType) (windows: RenderInstructions.T) =
+    let render log workingPath conf (settings: Settings.T) (submitCommand: EventRunner.Run) (updateType: EventRunner.UpdateType) (windows: RenderInstructions.T) =
         renderUis submitCommand conf (RenderInstructions.uis windows) (RenderInstructions.root windows)
-        Wallpaper.set (RenderInstructions.wallpaper windows)
+        Wallpaper.set workingPath (RenderInstructions.wallpaper windows)
         
         if moveWindows updateType then
             match settings.windowMovementStyle with

@@ -24,17 +24,17 @@
         <Compile Include="Layout\UIComponents\UIComponent.fs" />
         <Compile Include="Layout\LayoutEngines.fs" />
         <Compile Include="Layout\Layout.fs" />
+        <Compile Include="Tree\Tag.fs" />
+        <Compile Include="Tree\Display.fs" />
+        <Compile Include="Tree\TwimeRoot.fs" />
+        <Compile Include="Tree\Tree.fs" />
+        <Compile Include="Tree\TwimeRootWriter.fs" />
         <Compile Include="Layout\PostProcessors\PostProcessor.fs" />
         <Compile Include="Layout\PostProcessors\GapsPostProcessor.fs" />
         <Compile Include="Layout\PostProcessors\NoPostProcessor.fs" />
         <Compile Include="Layout\PostProcessors\ChainPostProcessor.fs" />
         <Compile Include="Layout\PostProcessors\OffsetPostProcessor.fs" />
         <Compile Include="Layout\PostProcessors\ResizePostProcessor.fs" />
-        <Compile Include="Tree\Tag.fs" />
-        <Compile Include="Tree\Display.fs" />
-        <Compile Include="Tree\TwimeRoot.fs" />
-        <Compile Include="Tree\Tree.fs" />
-        <Compile Include="Tree\TwimeRootWriter.fs" />
         <Compile Include="DirectionalNavigation\DirectionalNavigation.fs" />
         <Compile Include="TreeOperations\TreeOperation.fs" />
         <Compile Include="TreeOperations\TreeAddOperation.fs" />
@@ -47,11 +47,14 @@
         <Compile Include="TreeOperations\TreeFocusChangeOperation.fs" />
         <Compile Include="TreeOperations\TreeDirectionalOperation.fs" />
         <Compile Include="TreeOperations\LoadTreeOperation.fs" />
+        <Compile Include="TreeOperations\TreeChangeTagSettingOperation.fs" />
+        <Compile Include="TreeOperations\TreeSelectedOperation.fs" />
         <Compile Include="TestCases\SecondaryMonitorWindowMoveTestCase.fs" />
         <Compile Include="TestCases\SwitchingTagTestCase.fs" />
         <Compile Include="UI\BarUI.fs" />
         <Compile Include="UI\NoUI.fs" />
         <Compile Include="UI\UI.fs" />
+        <Compile Include="SpecialCases\SpecialCaseAwareOperation.fs" />
     </ItemGroup>
 
     <ItemGroup>

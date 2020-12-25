@@ -12,16 +12,19 @@ module Settings =
         initialLayout: Box.T -> string -> bool -> string
         tags: Display.Meta -> Tag.Meta list
         gaps: Gaps option
+        specialCases: SpecialCase.T list
         windowEventHandlers: WindowEventHandlers option
         uiConfig: UiConfig.T
         uiType: UI.T
         postProcessors: PostProcessors option
         uiSize: int
         workingDirectoryPath: string
+        logLevel: Logume.LogLevel
     }
     and Gaps = {
         outer: Box.T option
         inner: Box.T option
+        innerMin: Box.T option
     }
     and WindowEventHandlers = {
         created: (EventRunner.WindowHandler -> TwimeRoot.T option) option

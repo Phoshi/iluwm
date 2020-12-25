@@ -3,6 +3,10 @@
         open Integration.HotkeyAction
         open Integration.ExecuteOperation
         open Integration.Settings
+        open Twime.SpecialCase.Action
+        open Twime.SpecialCase.Predicate
+        open Twime.SpecialCase.Transformer
+        open Twime.SpecialCaseAwareOperation
         open Twime.TreeOperation
         open Twime.TreeAddOperation
         open Twime.TreeOperations
@@ -13,6 +17,8 @@
         open Twime.TreeTagOperation
         open Twime.TreeChangeWindowSettingOperation
         open Twime.TreeFocusChangeOperation
+        open Twime.TreeChangeTagSettingOperation
+        open Twime.TreeSelectedOperation
         open Twime.LayoutPostProcessors
         open Twime
         open Twime.TreeMove
@@ -48,62 +54,76 @@
             Windows ^+ Control ^+ E := TreeDirectionalOperation.swapWindow DirectionalNavigation.Direction.Down
             Windows ^+ Control ^+ I := TreeDirectionalOperation.swapWindow DirectionalNavigation.Direction.Right
             
-            Windows ^+ Shift ^+ Equals := changeActiveWindowWeight (Weight.create 0.5 0.0) 
-            Windows ^+ Minus := changeActiveWindowWeight (Weight.create -0.5 -0.0)
+            Windows ^+ Shift ^+ Equals := changeSelectionWeight (Weight.create 0.5 0.5) 
+            Windows ^+ Minus := changeSelectionWeight (Weight.create -0.5 -0.5)
             
+            Windows ^+ Shift ^+ G := toggleGaps
+            Windows ^+ Control ^+ Shift ^+ Equals := adjustMaxGap (Box.create 10 10 -10 -10)
+            Windows ^+ Control ^+ Minus := adjustMaxGap (Box.create -10 -10 10 10)
+            Windows ^+ Control ^+ BracketOpen := adjustOuterGap (Box.create -10 -10 10 10)
+            Windows ^+ Control ^+ BracketClose := adjustOuterGap (Box.create 10 10 -10 -10)
             
-            Windows ^+ BracketOpen := changeActiveWindowWeight (Weight.create 0.0 -0.5) 
-            Windows ^+ BracketClose := changeActiveWindowWeight (Weight.create -0.0 0.5) 
-            
-            Windows ^+ V := splitActiveWindow "vertical"
-            Windows ^+ H := splitActiveWindow "horizontal"
-            Windows ^+ S := splitActiveWindowRotate ["horizontal"; "vertical"]
-            Windows ^+ R := rotateActiveContainerLayoutEngine ["horizontal"; "vertical"; "tabbed"]
+            Windows ^+ V := splitSelection "vertical"
+            Windows ^+ H := splitSelection "horizontal"
+            Windows ^+ S := splitSelectionRotate ["horizontal"; "vertical"]
+            Windows ^+ R := rotateSelectionLayoutEngine ["horizontal"; "vertical"; "tabbed"]
             
             Windows ^+ F := toggleFullScreen
             Windows ^+ M := toggleMinimised
-            
+            Windows ^+ Z := toggleZen
+            Windows ^+ P := toggleFloating
             Windows ^+ Return := execute "C:\Users\Annabelle\Downloads\cmder\Cmder.exe" ""
             
-            Windows ^+ Q := quit
+            Windows ^+ Tab := expandSelection
+            Windows ^+ Shift ^+ Tab := reduceSelection
+            Windows ^+ Delete := resetSelection
+            
+            Windows ^+ Control ^+ Q := quit
         ] @
             (seq {
                for key in [D1; D2; D3; D4; D5; D6; D7; D8; D9] do
                    yield Windows ^+ key := setActiveTag (key.ToString().Substring(1))
-                   yield Windows ^+ Shift ^+ key := moveActiveWindowToTag (key.ToString().Substring(1))
+                   yield Windows ^+ Shift ^+ key := moveSelectionToTag (key.ToString().Substring(1))
         } |> Seq.toList))
         
-        let initialLayout area name primary =
+        let initialLayout area _ _ =
             if Box.width area > Box.height area
             then "horizontal"
-            else "vertical"
+            else "vertical" 
          
         let tags display =
             if (Display.primary display) then
-                [fullTag "1" "main" "walls/whitemountains-right.jpg"; fullTag "4" "code" "walls/redmountains-right.jpg"; fullTag "7" "ext" "walls/blackmountains-right.jpg"]
+                [fullTag "1" "α" "walls/whitemountains-right.jpg"; fullTag "4" "β" "walls/redmountains-right.jpg"; fullTag "7" "γ" "walls/whiteflower-right.jpg"; fullTag "9" "δ" "walls/whitetiles-right.png"]
+                |> List.map (andWithGaps (GapConfig.create (gapRectangle 90 210) (gapWidth 0) None true))
+                
             else 
                 [fullTag "2" "IM" "walls/corn-left.jpg"; fullTag "5" "media" "walls/redcat-left.png"; fullTag "8" "watch" "walls/blackbear-left.png"]
+                |> List.map (andWithGaps (GapConfig.create (gapRectangle 160 90) (gapWidth 0) (Some (Box.create 0 200 0 0)) true))
         
         let gaps =
             match trashiness with
             | Clean ->
                 {
-                    inner = gapWidth 30
-                    outer = gapWidth 20
+                    inner = gapRectangle 90 100 
+                    innerMin = gapWidth 0
+                    outer = (Some (Box.create 0 20 0 0))
                 }
             | Tight ->
                 {
                     inner = None
+                    innerMin = None
                     outer = None
                 }
             | Dirty ->
                 {
                     inner = gapWidth 40
+                    innerMin = None
                     outer = gapWidth 0
                 }
             | TrashIncarnate ->
                 {
                     inner = Some (Box.create 17 28 -5 7)
+                    innerMin = None
                     outer = Some (Box.create 22 21 -18 -29)
                 }
         
@@ -171,7 +191,7 @@
                         ui = None
                         window = Some 
                                     (ChainPostProcessor.postprocess [
-                                        GapsPostProcessor.postprocess (Box.create 17 28 -5 7)
+                                        GapsPostProcessor.postprocess PostProcessor.ProcessingStyle.Window (Box.create 17 28 -5 7)
                                         OffsetPostProcessor.postprocess 100 
                                         ResizePostProcessor.postprocess 20
                                     ])
@@ -182,16 +202,28 @@
             match trashiness with
             | TrashIncarnate -> 75
             | _ -> 25
+            
+        let specialCases = [
+            executable "discord" => transform weight (0.5, 0.5) (addToSidebarOnDisplay SidebarLeft "\\\\.\DISPLAY1")
+            executable "slack" => transform weight (0.5, 0.5) (addToSidebarOnDisplay SidebarLeft "\\\\.\DISPLAY1")
+            executable "KeePass" => addAndSplitActiveWindow (60.0f/40.0f)
+            executable "ConEmu64" => addAndSplitActiveWindow (70.0f/30.0f)
+            executable "foobar2000" => addToTag "5"
+            executable "steam" => transform weight (0.5, 0.5) addAfterActiveWindow
+            executable "obsidian" => transform weight (0.5, 0.5) (addToSidebarOnDisplay SidebarRight "\\\\.\DISPLAY1")
+        ]
         
         let settings = {
             hotkeys = hotkeys
             initialLayout = initialLayout
             tags = tags
             gaps = Some gaps
+            specialCases = specialCases
             windowEventHandlers = None
             uiConfig = uiConfig
             uiType = UI.BarUI.ui
             postProcessors = postprocessors
             uiSize = uiSize
             workingDirectoryPath = "e:\\iluwm\\"
+            logLevel = Logume.Errors
         }

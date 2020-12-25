@@ -9,31 +9,30 @@ using System.Windows.Media;
 using System.Windows.Media.TextFormatting;
 using System.Windows.Threading;
 using Newtonsoft.Json;
+using Views.State;
 
 namespace Views.Bar
 {
     public partial class DiscordStatus : TwimeBarComponent
     {
-        private readonly string _path;
         private readonly bool _notify;
         private readonly int _notifyDuration;
-        private DispatcherTimer _timer;
         private DateTime? _lastNotification;
         private Status _lastStatus;
         
         public DiscordStatus(string path, bool notify, int notifyDuration)
         {
-            _path = path;
             _notify = notify;
             _notifyDuration = notifyDuration;
             InitializeComponent();
             
-            _timer = new DispatcherTimer();
-            _timer.Tick += TimerOnTick;
-            _timer.Interval = TimeSpan.FromSeconds(0.5);
-            _timer.Start();
-            SetStatus();
+            State.DiscordStatus.Instance.Register(Environment.ExpandEnvironmentVariables(path));
+            State.DiscordStatus.Instance.DiscordStatusChanged += OnStatusUpdate;
+            SetStatus(State.DiscordStatus.Instance.Status);
         }
+
+        private void OnStatusUpdate(Status status)
+            => SetStatus(status);
 
         ~DiscordStatus()
         {
@@ -42,44 +41,26 @@ namespace Views.Bar
 
         public override void Close()
         {
-            _timer.Stop();
+            State.DiscordStatus.Instance.DiscordStatusChanged -= OnStatusUpdate;
             base.Close();
         }
 
-        private void SetStatus()
+        private void SetStatus(Status status)
         {
-            try
+            UpdateNotificationTime(status);
+
+            Status.Text = TextFor(status);
+            var (fore, back) = ColoursFor(status);
+            this.Background = back;
+            this.Foreground = fore;
+
+            if (string.IsNullOrEmpty(Status.Text))
             {
-                if (File.Exists(Environment.ExpandEnvironmentVariables(_path)))
-                {
-                    var contents = File.ReadAllText(Environment.ExpandEnvironmentVariables(_path));
-                    if (string.IsNullOrEmpty(contents))
-                    {
-                        //the plugin status writer seems to produce blank files sometimes :(
-                        return;
-                    }
-                    var status = JsonConvert.DeserializeObject<Status>(contents);
-
-                    UpdateNotificationTime(status);
-
-                    Status.Text = TextFor(status);
-                    var (fore, back) = ColoursFor(status);
-                    this.Background = back;
-                    this.Foreground = fore;
-
-                    if (string.IsNullOrEmpty(Status.Text))
-                    {
-                        this.Padding = new Thickness(0);
-                    }
-                    else
-                    {
-                        this.Padding = new Thickness(5);
-                    }
-                }
+                this.Padding = new Thickness(0);
             }
-            catch
+            else
             {
-                return;
+                this.Padding = new Thickness(5);
             }
         }
 
@@ -148,18 +129,5 @@ namespace Views.Bar
 
             string Muted() => status.Microphone == "Muted" ? "🔇" : "🔊";
         }
-
-        private void TimerOnTick(object? sender, EventArgs e)
-        {
-            SetStatus();
-        }
     }
-    
-    public class Status    {
-        public int Guild_Mention { get; set; } 
-        public string Voice_Channel { get; set; } 
-        public string Microphone { get; set; } 
-        public string Headphone { get; set; } 
-    }
-
 }

@@ -35,6 +35,20 @@ module SettingsReader =
             true
         else false
         
+    let stringifyError (e: FSharpErrorInfo) =
+        if e.FileName = "unknown" then
+            sprintf "%s (%s:%i)" e.Message e.FileName e.Start.Line 
+        else
+            let lines = System.IO.File.ReadAllLines e.FileName
+            
+            let errorPos =
+                let lead = String.replicate e.Start.Column " "
+                let err = String.replicate (e.End.Column - e.Start.Column) "^"
+                sprintf "%s%s" lead err 
+            
+            sprintf "%s (%s:%i)\n\t%s\n\t%s" e.Message e.FileName e.Start.Line (lines.[e.Start.Line-1].Trim()) errorPos
+        
+        
     let load filename =
         System.Console.WriteLine("Starting up with " + filename)
         let checker = FSharpChecker.Create()
@@ -50,14 +64,14 @@ module SettingsReader =
                     "-a"; filename
                     "-r:Integration.dll"
                     "-r:Core.dll"
-                    "-r:Runner.dll"
+                    "-r:iluwm.dll"
                 |])
                 |> Async.RunSynchronously
             if exitCode1 > 0 then
                 let errs =
                     errors1
-                    |> Array.map (fun e -> e.Message)
-                    |> String.concat "; "
+                    |> Array.map stringifyError
+                    |> String.concat "\n\n"
                 failwith errs
             ()
             

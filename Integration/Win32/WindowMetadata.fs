@@ -18,6 +18,9 @@ module WindowMetadata =
         [<DllImport "USER32.dll">]
         extern IntPtr GetWindow(IntPtr hWnd, uint32 uCmd)
         
+        [<DllImport "USER32.dll">]
+        extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, Int32& lpdwProcessId)
+        
     let private getText textFunc handle =
         let builder = StringBuilder(256)
         textFunc(WindowHandle.ptr handle, builder, 256) |> ignore
@@ -29,5 +32,13 @@ module WindowMetadata =
     let className = getText GetClassName
     
     let hasOwner handle =
-        GetWindow(WindowHandle.ptr handle, 4u) <> IntPtr.Zero 
+        GetWindow(WindowHandle.ptr handle, 4u) <> IntPtr.Zero
+        
+    let executableName handle =
+        let mutable pid: Int32 = 0
+        GetWindowThreadProcessId(WindowHandle.ptr handle, &pid)
+        |> ignore
+        
+        System.Diagnostics.Process.GetProcessById(pid).ProcessName;
+        
 

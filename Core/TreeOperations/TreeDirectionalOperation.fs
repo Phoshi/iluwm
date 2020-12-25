@@ -55,7 +55,7 @@ module TreeDirectionalOperation =
                 
         withLayout root {
             return! wrapLayoutInContainer engine 
-            return! TreeMove._move byRoot (insertionPoint direction) byActiveWindow
+            return! TreeMove._move byRoot (insertionPoint direction) bySelection
         }
     
     let rec firstParentWhere pred node root =
@@ -80,7 +80,7 @@ module TreeDirectionalOperation =
     let iterativeBreakout direction = 
         TreeOperation.onActiveLayout (fun root ->
             withLayout root {
-                let! active = find byActiveWindow
+                let! active = find bySelection
                 let! container = parent active
                 let superContainer = firstParentWhere (containerOfType (typeForDirection direction)) container root
                 
@@ -89,9 +89,9 @@ module TreeDirectionalOperation =
                     return! TreeMove._move
                                 (byExactNode target)
                                 (insertionPoint direction)
-                                byActiveWindow
+                                bySelection
                 | _ ->
-                    return! newContainerIn direction byActiveWindow 
+                    return! newContainerIn direction bySelection 
             }
         )
     
@@ -103,7 +103,7 @@ module TreeDirectionalOperation =
             withLayout root {
                 let oneRef = byWindow w
                 let! one = find oneRef
-                let! two = find byActiveWindow
+                let! two = find bySelection
                 
                 return! TreeMove._swap one two
             }
@@ -131,7 +131,7 @@ module TreeDirectionalOperation =
         TreeOperation.onActiveLayout (fun root -> 
             withLayout root {
                 let targetReference = byWindow w
-                let! sameContainer = sameContainer targetReference byActiveWindow
+                let! sameContainer = sameContainer targetReference bySelection
                 let! target = find targetReference
                 let! targetContainer = parent target
                 
@@ -142,7 +142,7 @@ module TreeDirectionalOperation =
                          direction)
                          targetReference
                 
-                return! TreeMove._move (byChild targetReference) targetPosition byActiveWindow
+                return! TreeMove._move (byChild targetReference) targetPosition bySelection
             }
         )
         
@@ -151,7 +151,7 @@ module TreeDirectionalOperation =
             TreeOperation.activeDisplay
                 root
                 
-        let newActive = DirectionalNavigation.windowTo (layoutFor currentMonitor) direction BasicNodeReferences.byActiveWindow (Display.activeLayout currentMonitor)
+        let newActive = DirectionalNavigation.windowTo (layoutFor currentMonitor) direction BasicNodeReferences.bySelection (Display.activeLayout currentMonitor)
         
         applyResult _switchFocus fail newActive root
         
@@ -160,7 +160,7 @@ module TreeDirectionalOperation =
             TreeOperation.activeDisplay
                 root
                 
-        let newActive = DirectionalNavigation.windowTo (layoutFor currentMonitor) direction BasicNodeReferences.byActiveWindow (Display.activeLayout currentMonitor)
+        let newActive = DirectionalNavigation.windowTo (layoutFor currentMonitor) direction BasicNodeReferences.bySelection (Display.activeLayout currentMonitor)
         
         applyResult _swapWindow fail newActive root
         
@@ -169,6 +169,6 @@ module TreeDirectionalOperation =
             TreeOperation.activeDisplay
                 root
                 
-        let newActive = DirectionalNavigation.windowTo (layoutFor currentMonitor) direction BasicNodeReferences.byActiveWindow (Display.activeLayout currentMonitor)
+        let newActive = DirectionalNavigation.windowTo (layoutFor currentMonitor) direction BasicNodeReferences.bySelection (Display.activeLayout currentMonitor)
         
         applyResult (_moveWindow direction) (iterativeBreakout direction) newActive root

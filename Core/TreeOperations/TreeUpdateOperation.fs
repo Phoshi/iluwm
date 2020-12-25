@@ -19,7 +19,7 @@ module TreeUpdateOperation =
             Tree.mapLayouts
                 (_updateWindowIfPresent
                      w
-                     (fun w -> Window.create (w.Name) (w.Weight) (f w.Definition))
+                     (fun w -> Window.create (w.Name) (f w.Definition))
                 )
                 root
             
@@ -51,6 +51,12 @@ module TreeUpdateOperation =
         
     let notLastActive (n: Window.Definition.T) (w: Window.Definition.T) =
         {w with lastActiveTrackedWindow = false}
+        
+    let selected (n: Window.Definition.T) (w: Window.Definition.T) =
+        {w with selected = true}
+        
+    let notSelected (n: Window.Definition.T) (w: Window.Definition.T) =
+        {w with selected = false}
         
     let updateWindow (f) (w: Window.Definition.T): TwimeRoot.Update =
         _updateWindow w (f w)
@@ -117,5 +123,29 @@ module TreeUpdateOperation =
                 
         else Some tree
         
+    let updateSelected (w: Window.Definition.T) (tree: TwimeRoot.T) =
+        if w.active then
+            let mutable t = Some tree
+            
+            let fWin (r, w) =
+                WindowNode (r, w |> Window.withDefinition (Window.Definition.withSelected false))
+            let fContainer (r, c, ch) =
+                ContainerNode (r, c |> Container.withSelected false, ch)
+            t <-
+                t
+                |> Option.map
+                       (Tree.mapLayouts
+                            (fun l -> Some
+                                        (cataTree
+                                            fWin
+                                            fContainer
+                                            l)))
+                |> Option.flatten
+            
+            t <- t |> Option.map (updateWindow selected w) |> Option.flatten
+                
+            t
+                
+        else Some tree
     
     

@@ -11,11 +11,25 @@ open Twime.LayoutUIComponents
 open Views.Bar
 
 module Bar =
+    let private isSelected uic =
+        UIComponent.container uic
+        |> LayoutTree.isSelected
+        
+    let parseColour colour =
+        let bc = BrushConverter()
+        let b = (bc.ConvertFrom(colour) :?> Brush)
+        
+        b.Freeze()
+        
+        b
+        
     let setPosition box (ui: Window) =
+        let min x y =
+            if x < y then y else x
         ui.Left <- Box.left box |> float
         ui.Top <- Box.top box |> float
-        ui.Width <- Box.width box |> float
-        ui.Height <- Box.height box |> float
+        ui.Width <- Box.width box |> min 0 |> float
+        ui.Height <- Box.height box |> min 0 |> float
         
     let setItems root runner contents uic (b: Bar) =
         let toDock align =
@@ -25,9 +39,7 @@ module Bar =
             | Styling.Inline -> None
             
         let applyStyles (styling: Styling.T) (control: UserControl) =
-            let parseColour colour =
-                let bc = BrushConverter()
-                (bc.ConvertFrom(colour) :?> Brush)
+                
             let toThickness box =
                 let dir ection =
                     ection box |> float
@@ -57,6 +69,10 @@ module Bar =
             |> List.map (fun c -> toItem c)
         
         b.SetItems(items)
+        if isSelected uic then
+            b.Background <- parseColour "#123456"
+        else 
+            b.Background <- parseColour "#3b4252"
         
     let show (b: Bar) =
         b.Show()

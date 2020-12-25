@@ -29,6 +29,12 @@ module Box =
             && x <= right box
             && top box <= y
             && y <= bottom box
+            
+    let within outer inner =
+        left outer <= left inner
+        && right outer >= right inner
+        && top outer <= top inner
+        && bottom outer >= bottom inner;
     
     let add l t r b box =
         create

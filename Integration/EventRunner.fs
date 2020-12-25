@@ -16,6 +16,9 @@ module rec EventRunner =
         | UiDriven
         | UserDriven
         
+    type EventMessage =
+        | Transform of TwimeRoot.Update * UpdateType
+        
     type WindowHandler = FirstOptionOf<Window.Definition.T>
     type EventHandler = WindowHandler -> TwimeRoot.T option
     type EventHandler<'a> = 'a -> WindowHandler -> TwimeRoot.T option
@@ -46,6 +49,20 @@ module rec EventRunner =
            renderer: Renderer) =
         let mutable _root = root
         let mutable _highestUpdate = UpdateType.NoUpdate
+        
+        let processor (runner: EventRunner.T) = 
+            MailboxProcessor.Start(fun inbox ->
+                    let rec loop n =
+                        async {
+                                let! msg = inbox.Receive()
+                                match msg with
+                                | Transform (tr, lv) ->
+                                    runner.transform lv tr 
+                                    runner.render()
+                                    return! loop n
+                            }
+                    loop 0
+                )
         
         let shouldRender l =
             match l with
@@ -99,6 +116,8 @@ module rec EventRunner =
             
             update l _twimeRootUpdate
             
+        member this.mailbox = processor this
+        
         member this.renderCycle l =
             try 
                 match compositor l _root with
@@ -146,11 +165,7 @@ module rec EventRunner =
         
         member this.transform l f = handleTransform l f
         member this.transformAsync l f =
-            Application.Current.Dispatcher.InvokeAsync(fun () -> 
-                handleTransform l f
-                this.render ()
-            )
-            |> ignore
+            this.mailbox.Post(Transform (f, l))
             
         member this.batchComplete () = this.render ()
         

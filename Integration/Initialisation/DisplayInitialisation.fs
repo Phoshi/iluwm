@@ -22,11 +22,7 @@ module DisplayInitialisation =
             let displayMeta = 
                 (Display.createMeta
                      name
-                     ((settings.gaps
-                       |> Option.bind (fun g -> g.outer)
-                       |> Option.map (Box.addBox)
-                       |> Option.defaultValue (Box.addBox Box.zero))
-                       area)
+                     area
                      area
                      primary
                      false)

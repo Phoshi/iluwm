@@ -35,14 +35,13 @@ module Hook =
         [<DllImport "User32.dll">]
         extern uint16 GetKeyState(int nVirtKey)
         
-        let isPressed log (key: Keystroke.T) =
-            let state = GetKeyState((int)key)
+        [<DllImport "User32.dll">]
+        extern uint16 GetAsyncKeyState(int vKey)
+        
+        let isPressed (key: Keystroke.T) =
+            let state = GetAsyncKeyState((int)key)
             
             let pressed = (state &&& 0x8000us) > 0us
-            
-            Message.message (sprintf "%A: %b (%i)" key pressed state)
-            |> Message.debug
-            |> log
             
             pressed
         
@@ -141,6 +140,8 @@ module Hook =
                 if code >= 0 then
                     let k = key wParam lParam matchedKeysDown
                     
+                    isPressed (k.key) |> ignore
+                    
                     if k.state = Key.KeyState.Down then
                             
                         let matches = keys
@@ -161,15 +162,19 @@ module Hook =
                                 |> log
                                 
                                 runner (HotkeyAction.action k)
-                                
-                            false
+                                false
+                            else
+                                true
                         else
                             true
                     else
                         if List.contains k.key matchedKeysDown then 
                             matchedKeysDown <- 
                                 List.filter ((<>) k.key) matchedKeysDown
-                            false
+                            if isPressed k.key then
+                                true
+                            else
+                                false
                         else
                             true
                 else

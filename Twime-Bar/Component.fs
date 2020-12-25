@@ -54,8 +54,8 @@ module Component =
     
     let noUpdater _ = ()
     
-    let contents c uic =
-        (c.contents) uic 
+    let contents c root =
+        (c.contents) root 
         
     let styling c = c.styling
     

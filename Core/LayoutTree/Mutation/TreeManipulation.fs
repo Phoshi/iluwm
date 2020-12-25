@@ -1,11 +1,8 @@
 ﻿namespace Twime
-open System.ComponentModel
-open System.ComponentModel
 open NUnit.Framework
 open Twime.LayoutTree
 open Twime.TreeNavigation
 open Twime.BasicNodeReferences
-open NUnit.Framework
 
 module TreeManipulation =
     type AddPosition = T list -> T -> T list
@@ -13,12 +10,13 @@ module TreeManipulation =
     let replaceNode (nodeRef: NodeReference) (transform: T -> T) (tree: T) =
         let rec _replaceNode tree =
             match tree with
-            | WindowNode (_, w) -> if (nodeRef tree) then transform tree else tree
+            | WindowNode (_, _) -> if (nodeRef tree) then transform tree else tree
             | ContainerNode (ref, c, n) -> if (nodeRef tree) then transform tree else ContainerNode(ref, c, List.map _replaceNode n)
             
         match find nodeRef tree with
         | Some _ -> Some (_replaceNode tree)
         | None -> None
+        
 
     let private addChildToNode (node: T) (child: T) (addTo: AddPosition)=
         match node with
@@ -75,13 +73,19 @@ module TreeManipulation =
         withLayout tree {
             let! container = find containerRef
             
+            let transient =
+                container
+                |> LayoutTree.containerDefinition
+                |> Option.map Container.transient
+                |> Option.defaultValue true
+            
             let descendants =
                 children container
             
             let descendantCount =
                 descendants |> List.length
             
-            if descendantCount = 1 then
+            if descendantCount = 1 && transient then
                 return! replaceNode containerRef (fun _ -> List.head descendants)
         } |> Option.orElse (Some tree)
         

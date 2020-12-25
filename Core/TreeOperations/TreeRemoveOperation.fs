@@ -18,8 +18,17 @@ module TreeRemoveOperation =
             
             let! parent = find ascendantRef
             let descendants = children parent
+            
+            let transient =
+                parent
+                |> LayoutTree.containerDefinition
+                |> Option.map Container.transient
+                |> Option.defaultValue true
+            
             if List.length descendants = 1 then
                 return! removeNode ascendantRef
+            else if not transient then
+                return! Some
             else if List.length descendants = 2 && (parent <> tree) then
                 return! removeNode (byHandle w.handle)
                 let! parent = find (byExactNode parent)
@@ -62,6 +71,29 @@ module TreeRemoveOperation =
             (not activeTagHasWindow && inactiveTagsHaveWindow)
             
         if Tree.hasDisplay windowOnOnlyInactiveTags root then
+            TreeUpdateOperation.updateWindow TreeUpdateOperation.deactivated w root
+        else
+            None
+            
+    let leaveWindowIfInZen (w: Window.Definition.T) root =
+        let anyWindowIsZen display =
+            let windowIsZen =
+                Tag.layoutHas (exists byZen)
+                
+            display
+            |> Display.activeTag
+            |> windowIsZen
+        
+        let thisWindowIsZen =
+            Tree.hasLayout (fun l ->
+                l
+                |> find (byHandle w.handle)
+                |> Option.bind (fun l -> LayoutTree.windows l |> List.tryHead)
+                |> Option.exists (fun w -> w.Definition.zen)
+                )
+                root
+            
+        if Tree.hasDisplay anyWindowIsZen root && not thisWindowIsZen then
             TreeUpdateOperation.updateWindow TreeUpdateOperation.deactivated w root
         else
             None

@@ -51,8 +51,8 @@ module Wallpaper =
         
         graphics.DrawImage(wall, Box.left box, Box.top box, Box.width box, Box.height box)
        
-    let loadImage path =
-        use stream = new FileStream(path, FileMode.Open, FileAccess.Read)
+    let loadImage root path =
+        use stream = new FileStream(Path.Combine(root, path), FileMode.Open, FileAccess.Read)
         new Bitmap(stream)
         
     let coordinateMapping boxen =
@@ -80,15 +80,18 @@ module Wallpaper =
         
         let namePart =
             wallpaperNames
-            |> List.map (fun n -> System.IO.Path.GetFileNameWithoutExtension(n))
+            |> List.map (fun n -> Path.GetFileNameWithoutExtension(n))
             |> String.concat "-"
         
-        namePart.ToString() + ".jpg"
+        let name = namePart.ToString() + ".jpg"
+        Path.Combine(
+            Path.GetTempPath(),
+            name)
         
-    let set wallpapers =
+    let set workingPath wallpapers =
         if not (canSet wallpapers) then
             ()
-            
+        else 
         let workspace = fullWorkspace (boxen wallpapers)
         let coordinateMapper = coordinateMapping (boxen wallpapers)
         
@@ -96,7 +99,7 @@ module Wallpaper =
             use image = createImage workspace
             
             for (box, wallpaper) in wallpapers do
-                use wallpaperImage = Option.get wallpaper |> loadImage
+                use wallpaperImage = Option.get wallpaper |> (loadImage workingPath)
                 let wallpaperPosition = coordinateMapper box
                 
                 drawWallpaper wallpaperPosition wallpaperImage image

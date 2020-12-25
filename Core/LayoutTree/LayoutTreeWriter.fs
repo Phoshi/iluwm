@@ -25,12 +25,13 @@ module LayoutTreeWriter =
         
     let writeWindow (w: Window.T) d =
         let _writeMeta (m: Window.Definition.T) d =
-            sprintf "(Meta %s %s %s)"
+            sprintf "(Meta %s %s %s %s)"
                 (writeBox m.size (d + 1))
+                (writeWeight m.weight (d + 1))
                 (sp (d + 1) m.title)
                 (sp (d + 1) (if m.minimised then "Minimised" else "Visible"))
             |> sp d
-        sprintf "(Window %s %s)" (writeWeight w.Weight (d+1)) (_writeMeta w.Definition (d + 1))
+        sprintf "(Window %s)" (_writeMeta w.Definition (d + 1))
         |> sp d
         
     let writeContainer (c: Container.T) d =
@@ -38,11 +39,11 @@ module LayoutTreeWriter =
         |> sp d
         
     let rec writeTree (t: LayoutTree.T) d =
-        let _writeWindow ((ref, win): LayoutTree.WindowNode) d =
+        let _writeWindow ((_, win): LayoutTree.WindowNode) d =
             sprintf "(Window %s)" (writeWindow win (d + 1))
             |> sp d
             
-        let _writeContainer (ref, container, children) d =
+        let _writeContainer (_, container, children) d =
             sprintf "(Container %s [%s])" (writeContainer container (d + 1)) (writeList children writeTree (d + 1))
             |> sp d
         (match t with

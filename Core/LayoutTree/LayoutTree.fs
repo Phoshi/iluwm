@@ -1,8 +1,6 @@
 ﻿namespace Twime
 
 open Maybe
-open NUnit.Framework.Constraints
-open Twime.Window
     
 module LayoutTree =
     type T =
@@ -18,7 +16,11 @@ module LayoutTree =
     
     let window (def: Window.Definition.T) =
         WindowNode
-            (TreeReference.create (), Window.create (def.title) Weight.init def)
+            (TreeReference.create (), Window.create (def.title) def)
+            
+    let container cont children =
+        ContainerNode
+            (TreeReference.create (), cont, children)
             
     let rec clone (t: T) =
         match t with
@@ -27,9 +29,19 @@ module LayoutTree =
             
     let rec windowNodes (layout: T) =
         match layout with
-        | WindowNode (_, w) -> [layout]
+        | WindowNode (_, _) -> [layout]
         | ContainerNode (_, _, children) -> List.collect windowNodes children
          
+    let isContainer layout =
+        match layout with
+        | ContainerNode _ -> true
+        | _ -> false
+        
+    let isWindow layout =
+        match layout with
+        | WindowNode _ -> true
+        | _ -> false
+    
     let rec windows (layout: T) =
         match layout with
         | WindowNode (_, w) -> [w]
@@ -48,6 +60,16 @@ module LayoutTree =
         match layout with
         | WindowNode _ -> "horizontal"
         | ContainerNode (_, ci, _) -> ci.LayoutEngine
+        
+    let isSelected (layout: T) =
+        match layout with
+        | WindowNode (_, w) -> w.Definition.selected
+        | ContainerNode (_, c, _) -> c.Selected
+        
+    let selected s t =
+        match t with
+        | WindowNode (r, w) -> WindowNode (r, Window.withDefinition (Window.Definition.withSelected s) w)
+        | ContainerNode (r, c, children) -> ContainerNode (r, Container.withSelected s c, children)
         
     let rec lastActive tree =
         match tree with
@@ -71,6 +93,13 @@ module LayoutTree =
                 |> List.map recurse
             fContainer (ref, container, childs)
         
+    let apply transformations layout =
+        let mutable l = Some layout
+        for trans in transformations do
+            l <- Option.bind trans l
+            
+        l
+        
     type LayoutMutator = T -> T option
     type LayoutBuilder(tree: T) =
         let mutable _tree = Some tree
@@ -81,7 +110,7 @@ module LayoutTree =
                
                return! continueWith expressionResult
             }
-        member this.Combine(a, b) =
+        member this.Combine(_, b) =
             b
         member this.Delay(f) = f()
         member this.Zero() = None
@@ -100,7 +129,7 @@ module LayoutTree =
         let _mkVContainer nextRef nodes = ContainerNode((nextRef(), Container.create "vertical", nodes))
         let mkContainer nodes = _mkContainer TreeReference.creator nodes
         let mkVContainer nodes = _mkVContainer TreeReference.creator nodes
-        let _mkWindow nextRef name active = WindowNode (nextRef(), {Name = name; Weight = Weight.init; Definition = Window.Definition.create Box.zero name false false active (WindowHandle.none)})
+        let _mkWindow nextRef name active = WindowNode (nextRef(), {Name = name; Definition = Window.Definition.create Box.zero Weight.init name "" false false active (WindowHandle.none)})
         let mkWindow name = _mkWindow TreeReference.creator name false
         
         type TestTree =

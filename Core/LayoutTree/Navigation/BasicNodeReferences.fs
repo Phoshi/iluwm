@@ -26,9 +26,18 @@ module BasicNodeReferences =
           | WindowNode (_, w) -> w.Definition.handle = handle
           | _ -> false
           
+    let byZen node =
+        match node with
+        | WindowNode (_, w) -> w.Definition.zen
+        | _ -> false
+        
+          
     let byChild matcher node =
         children node
         |> List.exists matcher
+    
+    let byGrandchild matcher =
+        byChild (byChild (matcher))
         
     let byActiveWindow (node: LayoutTree.T) =
         match node with
@@ -39,6 +48,9 @@ module BasicNodeReferences =
         match node with
         | WindowNode (_, w) -> w.Definition.lastActiveTrackedWindow
         | ContainerNode _ -> false
+        
+    let bySelection (node: LayoutTree.T) =
+        LayoutTree.isSelected node
         
     let byWindow (window: Window.T) node =
         match node with

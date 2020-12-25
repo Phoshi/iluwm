@@ -8,10 +8,25 @@ open LayoutTree
 open TreeOperation
 
 module TreeSplitOperation =
-    let containerWithLayout engine (container: LayoutTree.T) =
-        LayoutTree.T.ContainerNode
-            (LayoutTree.ref container,
-             LayoutTree.mapContainerDefinition (Container.withEngine engine) container
+    let isContainer ref tree =
+        let getContainer layout =
+            withLayout layout {
+                let! node = find ref
+                if node |> containerDefinition |> Option.isSome then
+                    return! Some
+            }
+            
+        Tree.mapLayout
+            (exists bySelection)
+            getContainer
+            tree
+        |> Option.isSome
+            
+            
+    let containerWithLayout engine (container: T) =
+        T.ContainerNode
+            (ref container,
+             mapContainerDefinition (Container.withEngine engine) container
              |> Option.defaultValue (Container.create engine),
              children container)
     
@@ -24,20 +39,20 @@ module TreeSplitOperation =
         List.item newIndex list
         
             
-    let containerWithNextLayout engines (container: LayoutTree.T) =
+    let containerWithNextLayout engines (container: T) =
         let currentLayout =
-            LayoutTree.layoutEngine container
+            layoutEngine container
         let newEngine = nextInList currentLayout engines
             
-        LayoutTree.T.ContainerNode
-            (LayoutTree.ref container,
-             LayoutTree.mapContainerDefinition (Container.withEngine newEngine) container
+        T.ContainerNode
+            (ref container,
+             mapContainerDefinition (Container.withEngine newEngine) container
              |> Option.defaultValue (Container.create newEngine),
              children container)
             
-    let windowToContainer direction finder (container: LayoutTree.T) =
+    let windowToContainer direction finder (container: T) =
         let _replaceWindowWithContainer direction finder window =
-            (LayoutTree.T.ContainerNode
+            (T.ContainerNode
                 (TreeReference.create (),
                  Container.create direction,
                  [window]))
@@ -53,9 +68,9 @@ module TreeSplitOperation =
         }
         |> Option.get
         
-    let windowToContainerWithNextLayout directions finder (container: LayoutTree.T) =
+    let windowToContainerWithNextLayout directions finder (container: T) =
         let _replaceWindowWithContainer direction finder window =
-            (LayoutTree.T.ContainerNode
+            (T.ContainerNode
                 (TreeReference.create (),
                  Container.create direction,
                  [window]))
@@ -63,7 +78,7 @@ module TreeSplitOperation =
         withLayout container {
             let! window = find finder
             let children = children container
-            let currentEngine = LayoutTree.layoutEngine container
+            let currentEngine = layoutEngine container
             let engine = nextInList currentEngine directions
             if List.length children > 1 then
                 return! replaceNode finder (_replaceWindowWithContainer engine finder)
@@ -77,28 +92,62 @@ module TreeSplitOperation =
         Tree.mapDisplay
             hasActiveWindow
             (Display.mapActiveLayout
-                 (TreeManipulation.replaceNode (byChild byActiveWindow) (windowToContainer direction byActiveWindow)))
+                 (replaceNode (byChild byActiveWindow) (windowToContainer direction byActiveWindow)))
             
     let splitActiveWindowRotate directions =
         Tree.mapDisplay
             hasActiveWindow
             (Display.mapActiveLayout
-                 (TreeManipulation.replaceNode (byChild byActiveWindow) (windowToContainerWithNextLayout directions byActiveWindow)))
+                 (replaceNode (byChild byActiveWindow) (windowToContainerWithNextLayout directions byActiveWindow)))
             
     let setActiveContainerLayoutEngine engine =
         Tree.mapDisplay
             hasActiveWindow
             (Display.mapActiveLayout
-                (TreeManipulation.replaceNode (byChild byActiveWindow) (containerWithLayout engine)))
+                (replaceNode (byChild byActiveWindow) (containerWithLayout engine)))
             
     let rotateLayoutEngine engines ref =
         Tree.mapDisplay
             (hasWindow ref)
             (Display.mapActiveLayout
-                (TreeManipulation.replaceNode ref (containerWithNextLayout engines)))
+                (replaceNode ref (containerWithNextLayout engines)))
     
     let rotateActiveContainerLayoutEngine engines =
         rotateLayoutEngine engines (byChild byLastActiveWindow)
+        
+    let splitSelection direction tree =
+        let selector =
+            if isContainer bySelection tree then bySelection else byChild bySelection
+            
+        Tree.mapDisplay
+            hasActiveWindow
+            (Display.mapActiveLayout
+                 (replaceNode selector (windowToContainer direction bySelection)))
+            tree
+            
+    let splitSelectionRotate directions tree =
+        let selector =
+            if isContainer bySelection tree then bySelection else byChild bySelection
+            
+        Tree.mapDisplay
+            hasActiveWindow
+            (Display.mapActiveLayout
+                 (replaceNode selector (windowToContainerWithNextLayout directions bySelection)))
+            tree
+            
+    let setSelectionLayoutEngine engine tree =
+        let selector =
+            if isContainer bySelection tree then bySelection else byChild bySelection
+        Tree.mapDisplay
+            hasActiveWindow
+            (Display.mapActiveLayout
+                (replaceNode selector (containerWithLayout engine)))
+            tree
+            
+    let rotateSelectionLayoutEngine engines tree =
+        let selector =
+            if isContainer bySelection tree then bySelection else byChild bySelection
+        rotateLayoutEngine engines selector tree
 
     module Tests =
         open Twime.LayoutTree.Tests
@@ -106,7 +155,7 @@ module TreeSplitOperation =
         open FsUnit
         let layoutToTree layout =
             layout
-            |> Tag.create (TreeReference.create ()) (Tag.createMeta "1" "1" None None)
+            |> Tag.create (TreeReference.create ()) (Tag.createMeta "1" "1" None None GapConfig.none)
             |> fun t -> Display.create (TreeReference.create ()) (Display.createMeta "disp" Box.zero Box.zero true false) [t] t.Reference
             |> fun d -> TwimeRoot.create [d] []
             

@@ -8,17 +8,19 @@ namespace Views.Bar
     public partial class Clock : TwimeBarComponent
     {
         private readonly string _format;
-        private DispatcherTimer _timer;
         public Clock(string format)
         {
             _format = format;
             InitializeComponent();
             
-            _timer = new DispatcherTimer();
-            _timer.Tick += TimerOnTick;
-            _timer.Interval = TimeSpan.FromSeconds(1);
-            _timer.Start();
-            SetTime();
+            State.Clock.Instance.ClockStatusChanged += ClockTick;
+            
+            SetTime(State.Clock.Instance);
+        }
+
+        private void ClockTick(State.Clock clock)
+        {
+            SetTime(clock);
         }
 
         ~Clock()
@@ -28,27 +30,22 @@ namespace Views.Bar
 
         public override void Close()
         {
-            _timer.Stop();
+            State.Clock.Instance.ClockStatusChanged -= ClockTick;
             base.Close();
         }
 
-        private void SetTime()
+        private void SetTime(State.Clock clock)
         {
             if (_format == "fuzzy")
             {
-                Time.Text = Fuzzy(DateTime.Now);
+                Time.Text = Fuzzy(clock.Now);
             }
             else
             {
-                Time.Text = DateTime.Now.ToString(_format);
+                Time.Text = clock.Now.ToString(_format);
             }
         }
         
-        private void TimerOnTick(object? sender, EventArgs e)
-        {
-            SetTime();
-        }
-
         private string[] hours = new[]
         {
             "midnight",
