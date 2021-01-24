@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFrameworks>net5.0-windows;netcoreapp3.1</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -49,6 +49,7 @@
         <Compile Include="TreeOperations\LoadTreeOperation.fs" />
         <Compile Include="TreeOperations\TreeChangeTagSettingOperation.fs" />
         <Compile Include="TreeOperations\TreeSelectedOperation.fs" />
+        <Compile Include="TreeOperations\TreeApiOperation.fs" />
         <Compile Include="TestCases\SecondaryMonitorWindowMoveTestCase.fs" />
         <Compile Include="TestCases\SwitchingTagTestCase.fs" />
         <Compile Include="UI\BarUI.fs" />

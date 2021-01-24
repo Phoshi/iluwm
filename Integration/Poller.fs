@@ -72,20 +72,8 @@ module public WindowTracker =
         }
                                         
                                         
-    let mutable hook: Hook.T option = None
-    
-    let private reassertHotkeys log eventRunner hotkeys =
-        Application.Current.Dispatcher.Invoke(fun () -> 
-                                                match hook with
-                                                | Some h ->
-                                                    h.Rehook()
-                                                | _ ->
-                                                    hook <- Some (Hook.hook log eventRunner hotkeys))
-        
-        
     let public tracker lock log hotkeys eventRunner onNewWindow onDestroyedWindow onResizedWindow onRetitledWindow onMinimisedWindow onMaximisedWindow onActiveWindowChanged onActiveMonitorChange onBatchComplete onStartup =
         let _tracker state =
-            //reassertHotkeys log eventRunner hotkeys
             if state.firstRun then
                 onStartup()
                 

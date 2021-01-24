@@ -18,6 +18,7 @@ module Window =
             minimised: bool
             maximised: bool
             zen: bool
+            marks: string list
             active: bool
             selected: bool
             lastActiveTrackedWindow: bool
@@ -40,7 +41,10 @@ module Window =
             a.maximised
             
         let zen a =
-            a.zen;
+            a.zen
+            
+        let marks a =
+            a.marks;
             
         let active a =
             a.active
@@ -63,6 +67,19 @@ module Window =
         let withSelected s t =
             {t with selected = s}
             
+        let addMark m t =
+            let _addMark existing =
+                m :: existing
+                |> List.distinct
+                
+            {t with marks = _addMark t.marks}
+            
+        let removeMark m t =
+            {t with marks = List.filter ((<>) m) t.marks}
+            
+        let removeMarks f t =
+            {t with marks = List.filter (fun m -> not (f m)) t.marks}
+            
         let create size weight title processName minimised maximised active handle =
             {
                 size = size
@@ -74,6 +91,7 @@ module Window =
                 minimised = minimised
                 maximised = maximised
                 zen = false
+                marks = []
                 active = active
                 selected = active
                 lastActiveTrackedWindow = active

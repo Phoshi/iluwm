@@ -44,6 +44,12 @@ module CommandBindings =
     let bindStringListTo handler args =
         handler args
         
+    let bindRefTo handler args =
+        let _bindRef ref =
+            let refNum = int64 ref |> TreeReference.fromLiteral
+            (BasicNodeReferences.byRef refNum)
+        handler (args |> msa |> _bindRef)
+        
     let bindWeightTo handler args =
         let parseWeight floats =
             match floats with
@@ -59,6 +65,31 @@ module CommandBindings =
             | _ -> Box.zero
             
         handler (args |> parseBox)
+        
+    let bindRenameOpTo handler args =
+        let join (strs: string list) =
+            System.String.Join(' ', strs)
+            
+        match args with
+        | tag :: rest ->
+                handler tag (join rest)
+        | _ ->
+            (fun _ -> None)
+            
+    let bindPushTagOpTo handler args =
+        match args with
+        | [treeRef; tagName] ->
+                handler (int64 treeRef |> TreeReference.fromLiteral |> BasicNodeReferences.byRef) tagName
+        | _ ->
+            (fun _ -> None)
+            
+    let bindSetMarkOpTo handler args =
+        match args with
+        | [treeRef; mark] ->
+                handler (int64 treeRef |> TreeReference.fromLiteral |> BasicNodeReferences.byRef) mark
+        | _ ->
+            (fun _ -> None)
+        
         
         
     let quit _ =
@@ -97,13 +128,27 @@ module CommandBindings =
         (nameof setActiveTag) => bindStringTo setActiveTag
         (nameof moveSelectionToTag) => bindStringTo moveSelectionToTag
         
+        (nameof focusMark) => bindStringTo focusMark
+        (nameof setMarkOnActiveWindow) => bindStringTo setMarkOnActiveWindow
+        (nameof setMark) => bindSetMarkOpTo setMark
+        
         (nameof quit) => simple quit
+        
+        "focus" => bindRefTo (TreeOperation.switchFocus BasicNodeReferences.byActiveWindow)
+        "pull" => bindRefTo (TreeApiOperation.moveNode BasicNodeReferences.byLastActiveWindow)
+        "renameTag" => bindRenameOpTo TreeApiOperation.renameTag
+        "tag-create-action" => bindStringTo setActiveTag
+        "pushTag" => bindPushTagOpTo moveSomethingToTag
     ]
     
     let parseHotkeys (configured: ConfigurationBindings.T list) =
         configured
         |> List.map (fun c ->
-                    (ConfigurationBindings.name c) => simple (ConfigurationBindings.action c)
+                    match ConfigurationBindings.action c with
+                    | Integration.HotkeyAction.TreeUpdate action ->
+                        (ConfigurationBindings.name c) => simple action
+                    | _ ->
+                        create (ConfigurationBindings.name c) Nop
             )
 
     let bindingFor configured name =
@@ -135,8 +180,7 @@ module CommandBindings =
             [<Test>]
             member x.``When I move the active window down, it moves down`` () =
                 bindingFor [] (nameof moveActiveWindow)
-                |> Option.map binding
-                |> Option.map (fun b -> b ["Down"])
+                |> Option.map (fun b -> exec b ["Down"])
                 |> Option.bind (fun u -> u root)
                 |> Option.get
                 |> TwimeRoot.display (fun _ -> true)

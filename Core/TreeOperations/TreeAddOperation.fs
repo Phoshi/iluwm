@@ -8,7 +8,7 @@ open LayoutTree
 open TreeNavigation
 
 module TreeAddOperation =
-    let private addAfterWindow (finder: NodeReference) (w: Window.Definition.T) t =
+    let addAfterWindow (finder: NodeReference) (w: Window.Definition.T) t =
         withLayout t {
             let! container = find (byChild finder)
             if container |> containerDefinition |> Option.map Container.exclusive |> Option.defaultValue false then
@@ -43,6 +43,14 @@ module TreeAddOperation =
             Tree.mapLayout
                 (exists byLastActiveWindow)
                 (addAfterWindow byLastActiveWindow w)
+                root
+        else None
+        
+    let addAfter ref (w: Window.Definition.T) root =
+        if Tree.hasDisplay (Display.activeLayoutHas (exists ref)) root then 
+            Tree.mapLayout
+                (exists ref)
+                (addAfterWindow ref w)
                 root
         else None
         

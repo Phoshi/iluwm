@@ -66,7 +66,8 @@
             Windows ^+ V := splitSelection "vertical"
             Windows ^+ H := splitSelection "horizontal"
             Windows ^+ S := splitSelectionRotate ["horizontal"; "vertical"]
-            Windows ^+ R := rotateSelectionLayoutEngine ["horizontal"; "vertical"; "tabbed"]
+            Windows ^+ R := rotateSelectionLayoutEngine ["horizontal"; "vertical";]
+            Windows ^+ T := setSelectionLayoutEngine "tabbed"
             
             Windows ^+ F := toggleFullScreen
             Windows ^+ M := toggleMinimised
@@ -79,19 +80,35 @@
             Windows ^+ Delete := resetSelection
             
             Windows ^+ Control ^+ Q := quit
+
+            mode (Windows ^+ K) "mark" 
+            mode (Windows ^+ OemTilde) "recall"
+            mode F14 "recall"
+            
+            Windows ^+ Back := focusMark "0"
         ] @
             (seq {
-               for key in [D1; D2; D3; D4; D5; D6; D7; D8; D9] do
-                   yield Windows ^+ key := setActiveTag (key.ToString().Substring(1))
-                   yield Windows ^+ Shift ^+ key := moveSelectionToTag (key.ToString().Substring(1))
-        } |> Seq.toList))
+               for key in [A; B; C; D; E; F; G; H; I; J; K; L; M; N; O; P; Q; R; S; T; U; V; W; X; Y; Z;] do
+                   yield (key := setMarkOnActiveWindow (key.ToString())) |> inMode "mark"
+                   yield (key := focusMark (key.ToString())) |> inMode "recall"
+        } |> Seq.toList) @
+             (seq {
+                for key in [D0; D1; D2; D3; D4; D5; D6; D7; D8; D9] do
+                   yield (key := focusMark (key.ToString().Substring(1))) |> inMode "recall"
+        } |> Seq.toList) @
+             (seq {
+                for key in [D1; D2; D3; D4; D5; D6; D7; D8; D9] do
+                    yield Windows ^+ key := setActiveTag (key.ToString().Substring(1))
+                    yield Windows ^+ Shift ^+ key := moveSelectionToTag (key.ToString().Substring(1))
+         } |> Seq.toList))
+        
         
         let initialLayout area _ _ =
             if Box.width area > Box.height area
             then "horizontal"
             else "vertical" 
          
-        let tags display =
+        let tags display = 
             if (Display.primary display) then
                 [fullTag "1" "α" "walls/whitemountains-right.jpg"; fullTag "4" "β" "walls/redmountains-right.jpg"; fullTag "7" "γ" "walls/whiteflower-right.jpg"; fullTag "9" "δ" "walls/whitetiles-right.png"]
                 |> List.map (andWithGaps (GapConfig.create (gapRectangle 90 210) (gapWidth 0) None true))
@@ -204,13 +221,14 @@
             | _ -> 25
             
         let specialCases = [
-            executable "discord" => transform weight (0.5, 0.5) (addToSidebarOnDisplay SidebarLeft "\\\\.\DISPLAY1")
-            executable "slack" => transform weight (0.5, 0.5) (addToSidebarOnDisplay SidebarLeft "\\\\.\DISPLAY1")
+            executable "discord" => transform (properties [weight (0.5, 0.5); mark "D"]) (addToSidebarOnDisplay SidebarLeft "\\\\.\DISPLAY1")
+            executable "slack" => transform (properties [weight (0.5, 0.5); mark "S"]) (addToSidebarOnDisplay SidebarLeft "\\\\.\DISPLAY1")
+            executable "Telegram" => transform (mark "T") addAfterActiveWindow
             executable "KeePass" => addAndSplitActiveWindow (60.0f/40.0f)
             executable "ConEmu64" => addAndSplitActiveWindow (70.0f/30.0f)
             executable "foobar2000" => addToTag "5"
-            executable "steam" => transform weight (0.5, 0.5) addAfterActiveWindow
-            executable "obsidian" => transform weight (0.5, 0.5) (addToSidebarOnDisplay SidebarRight "\\\\.\DISPLAY1")
+            executable "steam" => transform (weight (0.5, 0.5)) addAfterActiveWindow
+            executable "obsidian" => transform (weight (0.5, 0.5)) (addToSidebarOnDisplay SidebarRight "\\\\.\DISPLAY1")
         ]
         
         let settings = {

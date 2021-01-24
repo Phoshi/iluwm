@@ -12,6 +12,7 @@ module WindowList =
     }
     and Child = {
         Name: string
+        Subtitle: string
         Active: bool
         Handle: TreeReference.T
     }
@@ -19,6 +20,7 @@ module WindowList =
         let toChild ch =
             {
                 Name = UIComponent.tabName ch
+                Subtitle = UIComponent.subtitle ch
                 Active = UIComponent.tabActive ch
                 Handle = LayoutTree.ref ch
             }

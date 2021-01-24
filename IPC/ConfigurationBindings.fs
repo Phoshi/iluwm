@@ -9,29 +9,37 @@ type T = {
         hotkey: Keystroke.T
         modifiers: Keystroke.T list
         name: string
-        action: TwimeRoot.Update
+        action: Action
+        mode: string
 }
 
 let name t = t.name
 let hotkey t = t.hotkey
 let modifiers t = t.modifiers
 let action t = t.action
+let mode t = t.mode
 
-let create name key mods action =
+let create name key mods action mode =
     {
         name = name
         hotkey = key
         modifiers = mods
         action = action
+        mode = mode
     }
 
 let configuredBindings (hotkeys: HotkeyAction.T list) =
+    let action (a: Action) =
+        match a with
+        | TreeUpdate a -> Some a
+        | _ -> None
     let nameFor h =
         let join (strs: string list) =
             System.String.Join('_', strs)
             
         HotkeyAction.keys h
         |> List.map (fun k -> k.ToString())
+        |> List.append [h.mode]
         |> join
             
             
@@ -41,6 +49,7 @@ let configuredBindings (hotkeys: HotkeyAction.T list) =
             (HotkeyAction.key h)
             (HotkeyAction.modifiers h)
             (HotkeyAction.action h)
+            (HotkeyAction.modeOf h)
         
         
     hotkeys 
@@ -87,9 +96,9 @@ module Tests =
                         configuredBindings hotkeys
                         |> List.find (fun h -> name h = "LWin_A")
                         
-                    lwinA
-                    |> action
-                    <| TwimeRoot.create [] []
+                    match lwinA |> action with
+                    | TreeUpdate a -> a <| TwimeRoot.create [] []
+                    | _ -> None
                     |> ignore
                     
                     _called |> should equal (Some "a")

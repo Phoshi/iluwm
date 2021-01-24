@@ -5,9 +5,12 @@ open Twime
 type T =
     {
         command: string
-        binding: Arguments -> TwimeRoot.Update
+        binding: Binding
     }
 and Arguments = string list
+and Binding =
+    | TreeUpdate of (Arguments -> TwimeRoot.Update)
+    | Nop
 
 let create name binding =
     {command = name; binding = binding}
@@ -18,10 +21,15 @@ let simple binding _ =
 let command b = b.command
 let binding b = b.binding
 
+let exec b a r =
+        match b.binding with
+        | TreeUpdate bind -> bind a r
+        | _ -> None
+
 let isCommand c b =
     (command b) = c
     
-let inline (=>) name binding = create name binding
+let inline (=>) name binding = create name (TreeUpdate binding)
 
 let argument (args: Arguments) index =
     args.[index]

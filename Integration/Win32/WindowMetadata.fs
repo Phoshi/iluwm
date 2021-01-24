@@ -35,10 +35,13 @@ module WindowMetadata =
         GetWindow(WindowHandle.ptr handle, 4u) <> IntPtr.Zero
         
     let executableName handle =
-        let mutable pid: Int32 = 0
-        GetWindowThreadProcessId(WindowHandle.ptr handle, &pid)
-        |> ignore
-        
-        System.Diagnostics.Process.GetProcessById(pid).ProcessName;
+        try
+            let mutable pid: Int32 = 0
+            GetWindowThreadProcessId(WindowHandle.ptr handle, &pid)
+            |> ignore
+            
+            System.Diagnostics.Process.GetProcessById(pid).ProcessName;
+        with
+        | _ -> ""
         
 

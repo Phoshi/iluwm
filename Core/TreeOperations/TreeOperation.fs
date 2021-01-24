@@ -1,6 +1,7 @@
 ﻿namespace Twime
 
 open NUnit.Framework
+open Twime
 open Twime.TreeNavigation
 open Twime.TreeManipulation
 open Twime.BasicNodeReferences
@@ -51,7 +52,9 @@ module TreeOperation =
             let parentLayout =
                 root
                 |> TwimeRoot.display (Display.anyTagHas (Tag.layoutHas (exists node)))
-                |> Display.activeLayout
+                |> Display.tags
+                |> List.map Tag.layout
+                |> List.find (fun l -> exists node l)
                 
             if node parentLayout then
                 let contInfo =
@@ -71,7 +74,8 @@ module TreeOperation =
                     
             let! newTree = Tree.mapDisplay
                             (Display.anyTagHas (Tag.layoutHas (exists sourceNode)))
-                            (Display.mapActiveLayout
+                            (Display.mapLayout
+                                 (fun d t -> exists sourceNode (Tag.layout t))
                                  (_removeOldNode sourceNode))
                             root
                             
@@ -99,6 +103,8 @@ module TreeOperation =
             root
     
     let switchFocus old nu root =
+        let _tagHas ref =
+            Tag.layoutHas (exists nu)
         maybe {
             let deactivatedTree = Tree.mapDisplay
                                         (hasWindow old)
@@ -106,15 +112,21 @@ module TreeOperation =
                                             (fun d t -> exists old (Tag.layout t))
                                             (TreeManipulation.modifyWindow old (Window.withDefinition (Window.Definition.withActive false))))
                                         root
+                                        
+            let focusNewActiveTag = Tree.mapDisplay
+                                        (hasWindow nu)
+                                        (Display.setActiveTag (_tagHas nu))
+                                        (Option.defaultValue root deactivatedTree)
+                                        
             let! reactivatedTree = Tree.mapDisplay
                                         (hasWindow nu)
                                         (Display.mapActiveLayout
                                             (TreeManipulation.modifyWindow nu (Window.withDefinition (Window.Definition.withActive true))))
-                                        (Option.defaultValue root deactivatedTree)
+                                        (Option.defaultValue root focusNewActiveTag)
                                         
             return reactivatedTree
         }
-
+        
     module Tests =
         open FsUnit
         

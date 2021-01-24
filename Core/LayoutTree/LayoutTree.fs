@@ -51,6 +51,11 @@ module LayoutTree =
         match t with
         | WindowNode _ -> None
         | ContainerNode (_, ci, _) -> Some ci
+        
+    let windowDefinition t =
+        match t with
+        | WindowNode (_, wi) -> Some wi
+        | ContainerNode _ -> None
     
     let mapContainerDefinition f t =
         containerDefinition t

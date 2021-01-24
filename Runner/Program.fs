@@ -1,6 +1,7 @@
 ﻿open System
 open Integration.Rules
 open Logume
+open Microsoft.FSharpLu.Json
 open Runner
 open Integration
 open Twime
@@ -98,7 +99,7 @@ let execute (settings: Settings.T) =
             (fun weh -> weh.activeChanged)
             (firstOf {
                 logWindow "Active window change" (loggerFor "LogWindow")
-                updateTree [(updateWindowActive); (updateWindowLastActive); (updateSelected)]
+                updateTree [updateLastWindowMark; (updateWindowActive); (updateWindowLastActive); (updateSelected); unmarkActiveWindow]
             })
             firstOf
         
@@ -202,7 +203,7 @@ let execute (settings: Settings.T) =
                         eventRunner.onMonitorActiveChange
                         eventRunner.batchComplete
                         eventRunner.forceRender)
-                     50.0
+                     100.0
                      
     NamedPipeIPCServer.runIpcServer
         (loggerFor "iluwmipc")
@@ -212,11 +213,15 @@ let execute (settings: Settings.T) =
             (eventRunner.transformAsync UserDriven))
     |> ignore
     
+        
     NamedPipeIPCServer.runIpcServer
         (loggerFor "iluwmipcquery")
         "iluwmipcquery"
         (NamedPipeIPCServer.handleIncomingQuery
-            (settings.hotkeys))
+            (settings.hotkeys)
+            (fun () -> NamedPipeIPCServer.listWindows eventRunner)
+            (fun () -> NamedPipeIPCServer.listTags eventRunner)
+            (fun () -> NamedPipeIPCServer.listMarks eventRunner))
     |> ignore
                      
     WpfRigging.runWpf app |> ignore

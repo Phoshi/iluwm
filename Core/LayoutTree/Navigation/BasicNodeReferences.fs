@@ -16,6 +16,11 @@ module BasicNodeReferences =
           | WindowNode (_, w) -> w.Name = name
           | _ -> false
           
+    let byMark mark node =
+        match node with
+          | WindowNode (_, w) -> List.contains mark w.Definition.marks 
+          | _ -> false
+          
     let byRef ref node =
         match node with
           | WindowNode (r, _) -> r = ref

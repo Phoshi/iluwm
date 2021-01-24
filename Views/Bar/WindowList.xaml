@@ -23,14 +23,37 @@
                         <DataTemplate>
                                 <Border 
                                         Name="Border" 
-                                        Padding="25 5 25 5" 
                                         HorizontalAlignment="Stretch" 
                                         Background="#4c566a" 
                                         MaxWidth="{c:Binding ElementName=ItemsControl, Path=ActualWidth/Items.Count}">
                                         <Border.InputBindings>
                                                 <MouseBinding MouseAction="LeftClick" Command="commands:TreeTransformationCommands.Transform" CommandParameter="{Binding Handle}"></MouseBinding>
                                         </Border.InputBindings>
-                                        <TextBlock Name="Text" Text="{Binding Name}" HorizontalAlignment="Center" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                        <Grid>
+                                                <Grid.RowDefinitions>
+                                                        <RowDefinition/>
+                                                </Grid.RowDefinitions>
+                                                
+                                                <TextBlock 
+                                                        Grid.Row="0" 
+                                                        Name="Text" 
+                                                        Text="{Binding Name}" 
+                                                        Padding="25 5 25 5"
+                                                        HorizontalAlignment="Center" 
+                                                        VerticalAlignment="Center" 
+                                                        TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock 
+                                                        Grid.Row="0" 
+                                                        Name="Subtitle" 
+                                                        FontSize="12"
+                                                        Foreground="#88c0d0"
+                                                        Padding="2 0 0 0"
+                                                        Margin="0 0 0 2"
+                                                        Text="{Binding Subtitle}" 
+                                                        HorizontalAlignment="Left" 
+                                                        VerticalAlignment="Bottom" 
+                                                        TextTrimming="CharacterEllipsis"/>
+                                        </Grid>
                                 </Border>
                                 <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding Active}" Value="True">

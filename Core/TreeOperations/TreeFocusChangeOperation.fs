@@ -81,4 +81,9 @@ module TreeFocusChangeOperation =
         }
         |> Option.orElse (updateActiveDisplay ((TwimeRoot.display (Display.activeTagHas (Tag.layoutHas (TreeNavigation.exists next))) root) |> Display.info |> Display.name) root)
     
+    let focus ref =
+        TreeOperation.switchFocus byActiveWindow ref
+        
+    let focusMark mark =
+        focus (BasicNodeReferences.byMark mark)
     

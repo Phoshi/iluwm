@@ -27,7 +27,7 @@ module TreeNavigation =
         | _ when nodeRef tree -> Some tree
         | _ -> List.map (find nodeRef) (children tree)
                 |> List.filter Option.isSome
-                |> fun l -> if (List.length l = 1) then l.Head else None
+                |> fun l -> if (List.length l >= 1) then l.Head else None
         | _ when List.isEmpty (children tree) -> None
         
     let exists (finder: NodeReference) (tree: T) =

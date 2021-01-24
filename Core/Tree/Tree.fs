@@ -3,6 +3,11 @@
 open Microsoft.FSharpLu.Json
 
 module Tree =
+    let relaxed (f: TwimeRoot.Update): TwimeRoot.Update =
+        let _relaxed tree =
+            f tree |> Option.orElse (Some tree)
+        _relaxed
+        
     let mapDisplays f  =
         TwimeRoot.map f
         
@@ -27,6 +32,12 @@ module Tree =
         mapTags (_maybeMap pred f) 
     let mapLayout pred f =
         mapLayouts (_maybeMap pred f)
+        
+    let mapWindow p f =
+        mapLayout
+            (TreeNavigation.exists p)
+            (TreeManipulation.modifyWindow p f)
+        
         
     let hasDisplay pred tree =
         (TwimeRoot.displays tree)
@@ -53,6 +64,12 @@ module Tree =
         |> List.map Tag.layout
         |> List.collect LayoutTree.windows
     
+    let windowNodes tree =
+        TwimeRoot.displays tree
+        |> List.collect Display.tags
+        |> List.map Tag.layout
+        |> List.collect LayoutTree.windowNodes
+        
     let apply transformations (tree: TwimeRoot.T) =
         let mutable t = Some tree
         for transformation in transformations do

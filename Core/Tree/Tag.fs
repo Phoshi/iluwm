@@ -89,3 +89,9 @@ module Tag =
     let byTagName name tag =
         info tag
         |> byName name
+        
+    let rename name tag =
+        {tag with Meta = {tag.Meta with DisplayName = name}}
+        
+    let alterSystemName name tag =
+        {tag with Meta = {tag.Meta with Name = name}}

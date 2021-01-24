@@ -80,6 +80,40 @@ module TreeUpdateOperation =
             (Display.mapActiveLayout (_update active))
             tree
             
+    let updateLastWindowMark (w: Window.Definition.T) (tree: TwimeRoot.T) =
+        let shiftMark toRef oldMark newMark =
+            Tree.apply
+                [
+                    Tree.mapWindow (byMark oldMark) (Window.withDefinition (Window.Definition.addMark newMark))
+                    Tree.mapWindow (byMark oldMark) (Window.withDefinition (Window.Definition.removeMarks (fun m -> m <> newMark && m.ToCharArray() |> Array.forall System.Char.IsDigit))) 
+                ]
+        if w.active then
+            Tree.apply
+                [
+                    Tree.mapWindow (byMark "9") (Window.withDefinition (Window.Definition.removeMark "9")) |> Tree.relaxed
+                    shiftMark (byMark "8") "8" "9" |> Tree.relaxed
+                    shiftMark (byMark "7") "7" "8" |> Tree.relaxed
+                    shiftMark (byMark "6") "6" "7" |> Tree.relaxed
+                    shiftMark (byMark "5") "5" "6" |> Tree.relaxed
+                    shiftMark (byMark "4") "4" "5" |> Tree.relaxed
+                    shiftMark (byMark "3") "3" "4" |> Tree.relaxed
+                    shiftMark (byMark "2") "2" "3" |> Tree.relaxed
+                    shiftMark (byMark "1") "1" "2" |> Tree.relaxed
+                    shiftMark (byMark "0") "0" "1" |> Tree.relaxed
+                    Tree.mapWindow (byLastActiveWindow) (Window.withDefinition (Window.Definition.removeMarks (fun m -> m.ToCharArray() |> Array.forall System.Char.IsDigit))) 
+                    Tree.mapWindow (byLastActiveWindow) (Window.withDefinition (Window.Definition.addMark "0"))
+                ]
+                tree
+                
+        else Some tree
+        
+    let unmarkActiveWindow (w: Window.Definition.T) (tree: TwimeRoot.T) =
+        if w.active then
+                Tree.mapWindow
+                    (byLastActiveWindow)
+                    (Window.withDefinition (Window.Definition.removeMarks (fun m -> m.ToCharArray() |> Array.forall System.Char.IsDigit)))
+                    tree
+        else Some tree
     
     let updateWindowActive (w: Window.Definition.T) (tree: TwimeRoot.T) =
         let allWindows =

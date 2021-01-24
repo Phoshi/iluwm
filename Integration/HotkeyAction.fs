@@ -3,10 +3,14 @@
 open NUnit.Framework
 
 module HotkeyAction =
+    type Action =
+        | TreeUpdate of Twime.TwimeRoot.Update
+        | MinorMode of string
     type T = {
         key: Keystroke.T
         modifiers: Keystroke.T list
-        action: Twime.TwimeRoot.Update
+        action: Action
+        mode: string
     }
     
     let inline (:=) keys action : T =
@@ -18,13 +22,32 @@ module HotkeyAction =
                         |> List.rev
                         |> List.tail
                         |> List.rev
-            action = action
+            action = TreeUpdate action
+            mode = "default"
         }
+        
+    let inline mode keys mode : T =
+        let keystrokes = Hotkey.toKeyStroke keys
+        {
+            key = keystrokes
+                  |> List.last
+            modifiers = keystrokes
+                        |> List.rev
+                        |> List.tail
+                        |> List.rev
+            action = MinorMode mode
+            mode = "default"
+        }
+        
+    let inMode m hk =
+        {hk with mode = m}
         
     let key t = t.key
     let modifiers t = t.modifiers
     let keys t = t.modifiers @ [t.key]
     let action t = t.action
+    
+    let modeOf t = t.mode
     
     type Match = NoMatch | Partial | Full
     let private allPressed testKeys pressedKeys =

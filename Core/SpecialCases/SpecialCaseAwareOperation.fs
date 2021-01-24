@@ -13,8 +13,8 @@ module SpecialCase =
             window.processName.ToLowerInvariant() = processName.ToLowerInvariant()
             
     module Action =
-        let transform transformer arg continuation (window: Window.Definition.T) (root: TwimeRoot.T): TwimeRoot.T option =
-            (transformer arg window)
+        let transform transformer continuation (window: Window.Definition.T) (root: TwimeRoot.T): TwimeRoot.T option =
+            (transformer window)
             |> continuation
             <| root
             
@@ -26,6 +26,9 @@ module SpecialCase =
         let weight (h, f) (window: Window.Definition.T) =
             {window with weight = Weight.create h f }
             
+        let mark m (window: Window.Definition.T) =
+            {window with marks = [m]}
+            
         let zen state (w: Window.Definition.T) =
             {w with zen = state}
             
@@ -34,6 +37,9 @@ module SpecialCase =
             
         let floating state (w: Window.Definition.T) =
             {w with floating = state}
+            
+        let properties transformers window =
+            List.fold (fun w t -> t w) window transformers
             
     type T =
         {
@@ -104,7 +110,7 @@ module SpecialCaseAwareOperation =
                 
             [<Test>]
             member x.``when I have a special case then a matching window is transformed`` () =
-                handleSpecialCases [SpecialCase.create (SpecialCase.Predicate.entitled "Something special") (SpecialCase.Action.transform SpecialCase.Transformer.title "Something unique" TreeAddOperation.addToRootOfPrimaryDisplay)] (windowDef "Something special") emptyTree
+                handleSpecialCases [SpecialCase.create (SpecialCase.Predicate.entitled "Something special") (SpecialCase.Action.transform (SpecialCase.Transformer.title "Something unique") TreeAddOperation.addToRootOfPrimaryDisplay)] (windowDef "Something special") emptyTree
                 |> layoutFor
                 |> should BeSameTreeAs.beSameTreeAs (mkTree (C [W "Something unique"]))
 
@@ -114,7 +120,7 @@ module SyntaxTests =
     open SpecialCase.Action
     open SpecialCaseAwareOperation
     let rules = [
-        entitled "Firefox" => transform weight (0.5, 0.5) TreeAddOperation.addToRootOfPrimaryDisplay
+        entitled "Firefox" => transform (weight (0.5, 0.5)) TreeAddOperation.addToRootOfPrimaryDisplay
         executable "KeePass" => (TreeAddOperation.addAndSplitActiveWindow (60.0f/40.0f))
     ]
     

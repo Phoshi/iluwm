@@ -77,7 +77,27 @@ module TreeTagOperation =
                     (Display.isNamed (Display.name display))
                     (Display.addTag tag)
                     tree
-            | _ -> None 
+            | _ ->
+                let newTagDef =
+                    TwimeRoot.display
+                        Display.isActive
+                        tree
+                    |> Display.activeTag
+                    |> Tag.rename tag
+                    |> Tag.alterSystemName tag
+                    |> Tag.info
+                    
+                let newTag =
+                    Tag.create
+                        (TreeReference.create ())
+                        newTagDef
+                        (LayoutTree.T.ContainerNode
+                             (TreeReference.create (), (Container.create currentEngine), []))
+                        
+                Tree.mapDisplay
+                    Display.isActive
+                    (Display.addTag newTag)
+                    tree
         
     let moveActiveWindowToTag tag =
         let _moveActiveWindowToTag root = 
@@ -109,6 +129,22 @@ module TreeTagOperation =
         Tree.apply [
             createTagIfNotExists tag
             _moveSelectionToTag
+        ]
+        
+    let moveSomethingToTag ref tag =
+        let _moveSomethingToTag root = 
+            let tagLayout =
+                root
+                |> TwimeRoot.display (Display.anyTagHas (Tag.byTagName tag))
+                |> Display.tag (Tag.byTagName tag)
+                |> Tag.layout
+                |> byExactNode
+                
+            moveNodeBetweenLayouts ref tagLayout toEnd root
+            
+        Tree.apply [
+            createTagIfNotExists tag
+            _moveSomethingToTag
         ]
             
     let setActiveTag tag =

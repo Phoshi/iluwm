@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFrameworks>net5.0-windows;netcoreapp3.1</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,7 +21,6 @@
         <Compile Include="Keystroke.fs" />
         <Compile Include="Hotkey.fs" />
         <Compile Include="HotkeyAction.fs" />
-        <Compile Include="Hook.fs" />
         <Compile Include="MessagePump.fs" />
         <Compile Include="Poller.fs" />
         <Compile Include="RenderInstructions.fs" />

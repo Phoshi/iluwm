@@ -2,7 +2,7 @@
 open System.Diagnostics
 
 module ExecuteOperation =
-    let execute path args tree =
+    let execute (path: string) (args: string) tree =
         Process.Start(path, args)
         |> ignore
         

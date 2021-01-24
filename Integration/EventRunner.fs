@@ -116,6 +116,7 @@ module rec EventRunner =
             
             update l _twimeRootUpdate
             
+        member this.Tree = _root
         member this.mailbox = processor this
         
         member this.renderCycle l =
