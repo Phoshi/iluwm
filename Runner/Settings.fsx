@@ -191,7 +191,11 @@
                     Clock.barComponent (coloured "#ebcb8b" "#2e3440" |> andAligned Styling.Right) "dddd"
                     trayButton
                     layoutIndicator
-                    Spacer.barComponent (coloured "#3b4252" "#123123" |> andPadded 10 10 |> andAligned Styling.Right)
+                    Spacer.barComponent (coloured "#3b4252" "#123123" |> andPadded 5 5 |> andAligned Styling.Right)
+                    Shell.barComponent (coloured "#ebcb8b" "#2e3440" |> andAligned Styling.Right) @"-file ""e:\Dropbox\the library\the library\.scripts\count-todos.ps1"" -type ""#todo/soon"""
+                    Shell.barComponent (coloured "#d08770" "#2e3440" |> andAligned Styling.Right) @"-file ""e:\Dropbox\the library\the library\.scripts\count-todos.ps1"" -type ""#todo/today"""
+                    Shell.barComponent (coloured "#bf616a" "#2e3440" |> andAligned Styling.Right) @"-file ""e:\Dropbox\the library\the library\.scripts\count-deferred.ps1"""
+                    Spacer.barComponent (coloured "#3b4252" "#123123" |> andPadded 5 5 |> andAligned Styling.Right)
                     NowPlaying.barComponent (coloured "#5e81ac" "#d8dee9" |> andAligned Styling.Right)
                     windowList
                 ]
@@ -225,10 +229,11 @@
             executable "slack" => transform (properties [weight (0.5, 0.5); mark "S"]) (addToSidebarOnDisplay SidebarLeft "\\\\.\DISPLAY1")
             executable "Telegram" => transform (mark "T") addAfterActiveWindow
             executable "KeePass" => addAndSplitActiveWindow (60.0f/40.0f)
+            executable "KeePassXC" => addAndSplitActiveWindow (60.0f/40.0f)
             executable "ConEmu64" => addAndSplitActiveWindow (70.0f/30.0f)
             executable "foobar2000" => addToTag "5"
             executable "steam" => transform (weight (0.5, 0.5)) addAfterActiveWindow
-            executable "obsidian" => transform (weight (0.5, 0.5)) (addToSidebarOnDisplay SidebarRight "\\\\.\DISPLAY1")
+            executable "obsidian" => transform (properties [weight (0.5, 0.5); mark "O"]) (addToSidebarOnDisplay SidebarRight "\\\\.\DISPLAY1")
         ]
         
         let settings = {

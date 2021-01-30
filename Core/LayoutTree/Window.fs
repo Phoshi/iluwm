@@ -11,6 +11,7 @@ module Window =
         type T = {
             size: Box.T
             weight: Weight.T
+            minSize: Box.T
             ignoreForHigherOrderLayout: bool
             floating: bool
             processName: string
@@ -27,6 +28,8 @@ module Window =
         
         let size a =
             a.size
+            
+        let minSize a = a.minSize
             
         let title a =
             a.title
@@ -80,10 +83,14 @@ module Window =
         let removeMarks f t =
             {t with marks = List.filter (fun m -> not (f m)) t.marks}
             
+        let withMinSize box t =
+            {t with minSize = box}
+            
         let create size weight title processName minimised maximised active handle =
             {
                 size = size
                 weight = weight
+                minSize = Box.zero
                 title = title
                 ignoreForHigherOrderLayout = false
                 floating = false

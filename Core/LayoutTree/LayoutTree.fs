@@ -134,18 +134,20 @@ module LayoutTree =
         let _mkVContainer nextRef nodes = ContainerNode((nextRef(), Container.create "vertical", nodes))
         let mkContainer nodes = _mkContainer TreeReference.creator nodes
         let mkVContainer nodes = _mkVContainer TreeReference.creator nodes
-        let _mkWindow nextRef name active = WindowNode (nextRef(), {Name = name; Definition = Window.Definition.create Box.zero Weight.init name "" false false active (WindowHandle.none)})
-        let mkWindow name = _mkWindow TreeReference.creator name false
+        let _mkWindow nextRef name active minSize = WindowNode (nextRef(), {Name = name; Definition = Window.Definition.create Box.zero Weight.init name "" false false active (WindowHandle.none) |> Window.Definition.withMinSize minSize})
+        let mkWindow name = _mkWindow TreeReference.creator name false Box.zero
         
         type TestTree =
             | W of string
+            | Wmin of (string * Box.T)
             | A of string
             | C of TestTree list
             | V of TestTree list
         let rec _mkTree nextRef (tree: TestTree) =
             match tree with
-            | W s -> _mkWindow nextRef s false
-            | A s -> _mkWindow nextRef s true
+            | W s -> _mkWindow nextRef s false Box.zero
+            | Wmin (s, b) -> _mkWindow nextRef s false b
+            | A s -> _mkWindow nextRef s true Box.zero
             | C tl -> _mkContainer nextRef (List.map (_mkTree nextRef) tl)
             | V tl -> _mkVContainer nextRef (List.map (_mkTree nextRef) tl)
             

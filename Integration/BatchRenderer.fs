@@ -190,9 +190,55 @@ module BatchRenderer =
         WindowMove.batchMove
             (changed windows)
         
+    let mutable pane: ActiveSelectionPane option = None    
+    let renderFocusPane windows =
+       let activeWindow =
+           windows
+           |> RenderInstructions.visibleWindows
+           |> List.tryFind (fun (w, _) -> w.Definition.active)
+           
+       let desiredWindow =
+           activeWindow
+           |> Option.map (fun (w, b) -> (w.Definition.handle, Box.add -4 -4 5 4 b))
+           
+       let setBox box (w: Window) =
+           w.Left <- Box.left box |> float
+           w.Top <- Box.top box |> float
+           w.Width <- Box.width box |> float
+           w.Height <- Box.height box |> float
+           
+       let setPosition handle (w: ActiveSelectionPane) =
+               w.SitBehind(handle |> WindowHandle.ptr)
+           
+       fun () ->
+           match pane with
+           | Some w -> 
+               match desiredWindow with
+               | Some (handle, box) ->
+                   let neww = Views.ActiveSelectionPane()
+                   setBox box neww
+                   setPosition handle neww
+                   neww.Show()
+                   w.Close()
+                   pane <- Some neww
+               | None -> 
+                   w.Hide() 
+           | None ->
+                   let w = Views.ActiveSelectionPane()
+                   match desiredWindow with
+                   | Some (handle, box) ->
+                       setBox box w
+                       setPosition handle w
+                       w.Show()
+                   | None -> ()
+                   
+                   pane <- Some w
+       |> exec
+        
             
     let render log workingPath conf (settings: Settings.T) (submitCommand: EventRunner.Run) (updateType: EventRunner.UpdateType) (windows: RenderInstructions.T) =
         renderUis submitCommand conf (RenderInstructions.uis windows) (RenderInstructions.root windows)
+        renderFocusPane windows
         Wallpaper.set workingPath (RenderInstructions.wallpaper windows)
         
         if moveWindows updateType then

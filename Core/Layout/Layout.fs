@@ -22,8 +22,9 @@ module Layout =
                             match ci.LayoutEngine with
                             | "horizontal" -> Some (horizontalLayout uiSize boundSize containerRef, ui uiSize boundSize containerRef)
                             | "vertical" -> Some (verticalLayout uiSize boundSize containerRef, ui uiSize boundSize containerRef)
-                            | "spiral" -> Some (spiralLayout uiSize boundSize containerRef, ui uiSize boundSize containerRef)
                             | "tabbed" -> Some (tabbedLayout uiSize boundSize containerRef, ui uiSize boundSize containerRef)
+                            | "sidebar-right" -> Some (verticalLayout 0 boundSize containerRef, noUi)
+                            | "sidebar-left" -> Some (verticalLayout 0 boundSize containerRef, noUi)
                             | _ -> None
                         | _ -> None
         }

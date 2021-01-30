@@ -1,0 +1,22 @@
+﻿<Window x:Class="Views.ActiveSelectionPane"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:Views"
+        mc:Ignorable="d"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        AllowsTransparency="True"
+        Loaded="Bar_OnLoaded"
+        Title="ActiveSelectionPane" Height="450" Width="800">
+    <Window.Background>
+        <SolidColorBrush Color="White" Opacity="0"></SolidColorBrush>
+    </Window.Background>
+    <Border Opacity="0.8" BorderThickness="5" BorderBrush="#88c0d0" CornerRadius="2">
+        <Grid>
+        </Grid>
+    </Border>
+</Window>

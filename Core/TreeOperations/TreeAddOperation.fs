@@ -108,10 +108,10 @@ module TreeAddOperation =
 
     type SidebarSide = SidebarLeft | SidebarRight
     let addToSidebarOnDisplay side display (w: Window.Definition.T) =
-        let (sidebarF, restF, mergeF) =
+        let (sidebarF, restF, mergeF, engine) =
             match side with
-            | SidebarLeft -> (List.tryHead, List.tail, fun s r -> s @ r)
-            | SidebarRight -> (List.tryLast, (fun l -> List.take (List.length l - 1) l), (fun s r -> r @ s))
+            | SidebarLeft -> (List.tryHead, List.tail, (fun s r -> s @ r), "sidebar-left")
+            | SidebarRight -> (List.tryLast, (fun l -> List.take (List.length l - 1) l), (fun s r -> r @ s), "sidebar-right")
             
         let sidebarWindow root =
             let rootInfo =
@@ -122,7 +122,7 @@ module TreeAddOperation =
             let potentialExistingSidebar =
                 children
                 |> sidebarF
-                |> Option.filter (fun n -> containerDefinition n |> Option.exists (fun c -> c.LayoutEngine = "vertical"))
+                |> Option.filter (fun n -> containerDefinition n |> Option.exists (fun c -> c.LayoutEngine = engine))
                 
             match potentialExistingSidebar with
             | Some sidebar ->
@@ -136,7 +136,7 @@ module TreeAddOperation =
             | None ->
                 let sidebar =
                     container
-                        (Container.create "vertical" |> Container.intransient |> Container.withExclusive true)
+                        (Container.create engine |> Container.intransient |> Container.withExclusive true)
                         [window w]
                     
                 container

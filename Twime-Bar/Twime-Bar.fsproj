@@ -12,6 +12,7 @@
         <Compile Include="TagList.fs" />
         <Compile Include="Bar.fs" />
         <Compile Include="Clock.fs" />
+        <Compile Include="Shell.fs" />
         <Compile Include="DiscordStatus.fs" />
         <Compile Include="NowPlaying.fs" />
         <Compile Include="LayoutIndicator.fs" />
