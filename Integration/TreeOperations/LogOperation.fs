@@ -13,7 +13,7 @@ module LogOperation =
         let windowStyle = WindowStyle.windowStyle (WindowHandle.fromWindow w)
         let executableName = WindowMetadata.executableName (WindowHandle.fromWindow w)
         
-        Message.message (sprintf "%s: %s[%s:%s:%s] (%s)" prefix w.title executableName windowClass (toBin windowStyle) (w.size |> Box.toString))
+        Message.message (sprintf "%s: %s[%s:%s:%s] (%s)[%s]" prefix w.title executableName windowClass (toBin windowStyle) (w.size |> Box.toString) (w.minSize |> Box.toString))
         |> Message.trivial
         |> log
         

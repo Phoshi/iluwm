@@ -33,6 +33,7 @@ module public WindowTracker =
         ( Window.Definition.create
             (DwmInfo.extendedWindowBorders handle)
             Weight.init
+            (WindowSize.minimumSize handle)
             (WindowMetadata.title handle)
             (WindowMetadata.executableName handle)
             (WindowState.isMinimised handle)

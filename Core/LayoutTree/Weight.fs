@@ -19,6 +19,16 @@ module Weight =
             (horizontal w * (float x))
             (vertical w * (float x))
             
+    let hmultiply (x: float32) w =
+        create
+            (horizontal w * (float x))
+            (vertical w)
+             
+    let vmultiply (x: float32) w =
+        create
+            (horizontal w)
+            (vertical w * (float x))
+            
     let divide (x: float32) w =
         create
             (horizontal w / (float x))

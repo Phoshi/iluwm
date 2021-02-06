@@ -59,7 +59,7 @@ module BasicNodeReferences =
         
     let byWindow (window: Window.T) node =
         match node with
-        | WindowNode (_, w) -> w = window
+        | WindowNode (_, w) -> w.Definition.handle = window.Definition.handle
         | _ -> false
         
     let byPositionIn matcher position tree node =

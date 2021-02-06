@@ -51,7 +51,7 @@ module DirectionalNavigation =
         match node with
         | T.WindowNode (_, win) -> 
             match piece with
-            | LayoutPiece.Window (w, _) -> w = win
+            | LayoutPiece.Window (w, _) -> w.Definition.handle = win.Definition.handle
             | _ -> false
         | T.ContainerNode (_, cont, _) ->
             match piece with

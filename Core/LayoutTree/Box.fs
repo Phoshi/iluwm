@@ -34,7 +34,11 @@ module Box =
         left outer <= left inner
         && right outer >= right inner
         && top outer <= top inner
-        && bottom outer >= bottom inner;
+        && bottom outer >= bottom inner
+        
+    let greaterThanOrEqual bigger smaller =
+        width bigger >= width smaller
+        && height bigger >= height smaller
     
     let add l t r b box =
         create

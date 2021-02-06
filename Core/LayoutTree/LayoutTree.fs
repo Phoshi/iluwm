@@ -134,7 +134,7 @@ module LayoutTree =
         let _mkVContainer nextRef nodes = ContainerNode((nextRef(), Container.create "vertical", nodes))
         let mkContainer nodes = _mkContainer TreeReference.creator nodes
         let mkVContainer nodes = _mkVContainer TreeReference.creator nodes
-        let _mkWindow nextRef name active minSize = WindowNode (nextRef(), {Name = name; Definition = Window.Definition.create Box.zero Weight.init name "" false false active (WindowHandle.none) |> Window.Definition.withMinSize minSize})
+        let _mkWindow nextRef name active minSize = WindowNode (nextRef(), {Name = name; Definition = Window.Definition.create Box.zero Weight.init Box.zero name "" false false active (WindowHandle.none) |> Window.Definition.withMinSize minSize})
         let mkWindow name = _mkWindow TreeReference.creator name false Box.zero
         
         type TestTree =

@@ -11,7 +11,7 @@ module Compositor =
     let postprocess (display: Display.T) postprocessor uiPostprocessor instruction =
         match instruction with
         | Window (w, b) ->
-            Window (w, postprocessor display display.Meta.WorkArea (w.Definition.handle.GetHashCode()) b)
+            Window (w, postprocessor display display.Meta.WorkArea (w.Definition.handle.GetHashCode()) (Some w) b)
         | UI uis ->
             UI (
                    uis
@@ -21,6 +21,7 @@ module Compositor =
                                 display
                                 display.Meta.WorkArea
                                 ((UIComponent.box ui).GetHashCode())
+                                None
                                 (UIComponent.box ui))
                            ui)
                )

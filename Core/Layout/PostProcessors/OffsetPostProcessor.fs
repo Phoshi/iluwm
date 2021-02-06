@@ -11,7 +11,7 @@ module OffsetPostProcessor =
             (Box.right box + left)
             (Box.bottom box + top)
             
-    let postprocess a _ _ seed box =
+    let postprocess a _ _ seed _ box =
         let rand = Random(seed + "offset".GetHashCode())
         let leftOffset = rand.Next(-a, a)
         let topOffset = rand.Next(-a, a)

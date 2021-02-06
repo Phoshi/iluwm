@@ -212,27 +212,3 @@ module LayoutEngines =
                 vl 1 tree |> should equal <| Some (Box.create 0 25 100 50)
                 vl 2 tree |> should equal <| Some (Box.create 0 50 100 75)
                 vl 3 tree |> should equal <| Some (Box.create 0 75 100 100)
-                
-        [<TestFixture; Category "engine">]
-        type ``Given a tree with windows which have minimum sizes`` () =
-            let tree = mkTree <| C [
-               W "One" 
-               W "Two" 
-               Wmin ("Three", Box.create 0 0 50 50)
-            ]
-            
-            [<Test>]
-            member x.``horizontal layout gives the window with a minimum size its requested space`` () =
-                let hl = horizontalLayout 0 (Box.create 0 0 100 100) (byExactNode tree)
-                
-                hl 0 tree |> should equal <| Some (Box.create 0 0 25 100)
-                hl 1 tree |> should equal <| Some (Box.create 25 0 50 100)
-                hl 2 tree |> should equal <| Some (Box.create 50 0 100 100)
-                
-            [<Test>]
-            member x.``vertical layout gives the window with a minimum size its requested space`` () =
-                let vl = verticalLayout 0 (Box.create 0 0 100 100) (byExactNode tree)
-                
-                vl 0 tree |> should equal <| Some (Box.create 0 0 100 25)
-                vl 1 tree |> should equal <| Some (Box.create 0 25 100 50)
-                vl 2 tree |> should equal <| Some (Box.create 0 50 100 100)

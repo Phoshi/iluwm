@@ -73,7 +73,7 @@ module SpecialCaseAwareOperation =
         open NUnit.Framework
         
         let windowDef name =
-            Window.Definition.create Box.zero Weight.init name "" false false false (WindowHandle.create IntPtr.Zero)
+            Window.Definition.create Box.zero Weight.init Box.zero name "" false false false (WindowHandle.create IntPtr.Zero)
             
         [<TestFixture>]
         type ``Given an empty tree`` () =

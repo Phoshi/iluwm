@@ -71,7 +71,33 @@ module GapsPostProcessor =
             
         _scalingFactor tree
         
-    let postprocessScaling style (minSize: Box.T) (maxSize: Box.T) display workArea seed box =
+    let clampToMinimum (window: Window.T option) (availableSpace: Box.T) (desiredSpace: Box.T) =
+        match window with
+        | Some w ->
+            let minSpace = w.Definition.minSize
+            let mutable resultantSpace = desiredSpace
+            if (Box.height desiredSpace) < (Box.height minSpace) && (Box.height availableSpace) > (Box.height minSpace) then
+                let availableVerticalPadding = ((Box.height availableSpace) - (Box.height minSpace)) / 2
+                resultantSpace <-
+                    Box.create 
+                        (Box.left desiredSpace)
+                        (Box.top availableSpace + availableVerticalPadding) 
+                        (Box.right desiredSpace)
+                        (Box.bottom availableSpace - availableVerticalPadding)
+                        
+            if (Box.width desiredSpace) < (Box.width minSpace) && (Box.width availableSpace) > (Box.width minSpace) then
+                let availableHorizontalPadding = ((Box.width availableSpace) - (Box.width minSpace)) / 2
+                resultantSpace <-
+                    Box.create 
+                        (Box.left availableSpace + availableHorizontalPadding)
+                        (Box.top resultantSpace) 
+                        (Box.right availableSpace - availableHorizontalPadding)
+                        (Box.bottom resultantSpace)
+                        
+            resultantSpace
+        | _ -> desiredSpace
+        
+    let postprocessScaling style (minSize: Box.T) (maxSize: Box.T) display workArea seed window box =
         let gapConfig =
             Display.activeTag display
             |> Tag.gapConfig
@@ -84,7 +110,9 @@ module GapsPostProcessor =
             let effectiveSize =
                 scale (gapSize GapConfig.min minSize) (gapSize GapConfig.max maxSize) (scalingFactor display)
             
-            addGap effectiveSize workArea box
+            let desiredSize = addGap effectiveSize workArea box
+            
+            desiredSize |> clampToMinimum window box
         else
             box
         

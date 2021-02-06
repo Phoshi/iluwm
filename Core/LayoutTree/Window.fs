@@ -86,11 +86,11 @@ module Window =
         let withMinSize box t =
             {t with minSize = box}
             
-        let create size weight title processName minimised maximised active handle =
+        let create size weight minSize title processName minimised maximised active handle =
             {
                 size = size
                 weight = weight
-                minSize = Box.zero
+                minSize = minSize
                 title = title
                 ignoreForHigherOrderLayout = false
                 floating = false

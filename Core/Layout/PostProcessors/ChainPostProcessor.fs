@@ -1,9 +1,9 @@
 ﻿namespace Twime.LayoutPostProcessors
 
 module ChainPostProcessor =
-    let postprocess postprocessors display workArea seed winBox =
+    let postprocess postprocessors display workArea seed win winBox =
          List.fold
-            (fun b p -> p display workArea seed b)
+            (fun b p -> p display workArea seed win b)
             winBox
             postprocessors
 

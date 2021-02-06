@@ -7,5 +7,5 @@ module PostProcessor =
         | Window
         | UI
         
-    type T = Display.T -> Box.T -> int -> Box.T -> Box.T
+    type T = Display.T -> Box.T -> int -> Window.T option -> Box.T -> Box.T
 

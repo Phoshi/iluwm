@@ -2,6 +2,7 @@
 
 open NUnit.Framework
 open LayoutTree
+open NUnit.Framework.Internal
 open Twime.LayoutEngines
 open Twime.LayoutUIComponents
 open Twime.TreeNavigation
@@ -62,8 +63,76 @@ module Layout =
                    |> Some
         }
         
+    let directionFor engine =
+        match engine with
+        | "horizontal" -> Box.width
+        | "vertical" -> Box.height
+        | _ -> Box.width
+            
+    let rec minimumSize containerEngine (node: LayoutTree.T) =
+            
+        match node with
+        | WindowNode (_, wi) -> wi.Definition.minSize |> (directionFor containerEngine)
+        | ContainerNode (_, ci, children) ->
+            if ci.LayoutEngine = containerEngine then
+                children
+                |> List.map (minimumSize containerEngine)
+                |> List.sum
+            else
+                children
+                |> List.map (minimumSize containerEngine)
+                |> List.max
+    let isUndersized (window: LayoutPiece) =
+        match window with
+        | LayoutPiece.Window (wi, box) ->
+            let minSize = wi.Definition.minSize
+            (Box.width minSize) > (Box.width box) || (Box.height minSize) > (Box.height box)
+        | _ -> false
+        
+    let hasUndersizedWindows (windows: LayoutPiece list) =
+        windows
+        |> List.exists isUndersized
+        
+    let doubleWeightForUndersized (windows: LayoutPiece list) scalingFactor (tree: LayoutTree.T)  =
+        let windowRef lp =
+            match lp with
+            | LayoutPiece.Window (w, _) -> (byWindow w)
+            | _ -> failwith "Tried to get the window of a nonwindow layout piece"
+            
+        let scaleFactor lp baseFactor =
+            match lp with
+            | LayoutPiece.Window (w, b) ->
+                let hScaling =
+                    if (Box.width w.Definition.minSize) > (Box.width b) then baseFactor else 1.0f
+                let vScaling =
+                    if (Box.height w.Definition.minSize) > (Box.height b) then baseFactor else 1.0f
+                (hScaling, vScaling)
+            
+        let scaleWeight ref (hfactor, vfactor) tree =
+            Weights.adjustWeight ref (fun w -> w |> Weight.hmultiply hfactor |> Weight.vmultiply vfactor) tree
+        let mutable t = Some tree
+        
+        let undersized =
+            windows
+            |> List.where isUndersized
+            
+        for window in undersized do
+            t <- Option.bind (scaleWeight (windowRef window) (scaleFactor window scalingFactor)) t
+            
+        t
+        
+        
+        
+    let rec _layoutWithMinimums uiSize ui boundSize containerRef i tree : LayoutPiece list option =
+        let computedLayout = _layout uiSize ui boundSize (byExactNode tree) tree |> Option.get
+        if hasUndersizedWindows computedLayout && i < 5.0f then
+            let newTree = doubleWeightForUndersized computedLayout i tree |> Option.get
+            _layoutWithMinimums uiSize ui boundSize containerRef (i+0.25f) newTree
+        else
+            Some computedLayout
+        
     let layout uiSize ui boundsize tree =
-        _layout uiSize ui boundsize (byExactNode tree) tree
+        _layoutWithMinimums uiSize ui boundsize (byExactNode tree) 1.25f tree
         
     module Tests =
         open Twime.LayoutTree.Tests
@@ -73,7 +142,15 @@ module Layout =
             LayoutPiece.Window
                 (Window.create
                      name
-                     (Window.Definition.create Box.zero weight name "" false false false WindowHandle.none),
+                     (Window.Definition.create Box.zero weight Box.zero name "" false false false WindowHandle.none),
+                     
+                     size
+                )
+        let winWithMin name min size =
+            LayoutPiece.Window
+                (Window.create
+                     name
+                     (Window.Definition.create Box.zero Weight.init min name "" false false false WindowHandle.none),
                      
                      size
                 )
@@ -211,3 +288,55 @@ module Layout =
                     win "Discord" <| Box.create 33 33 55 100
                     winWithWeight "Rider" (Weight.create 2.0 2.0) <| Box.create 55 33 100 100
                 ]))
+                
+        [<TestFixture; Category "layout">]
+        type ``Given a tree with deeply nested containers and minimum sizes``() =
+            let tree = mkTree <| C [
+                W "Firefox"
+                V [
+                    W "Notepad"
+                    C [
+                        W "Discord"
+                        Wmin ("Rider", Box.create 0 0 50 50)
+                    ]
+                ]
+            ]
+            
+            let layout = _layoutWithMinimums 0 noUi
+            
+            [<Test>]
+            member x.``minimum sizes in nested containers are respected`` () =
+                let rendered =
+                    tree
+                    |> layout (Box.create 0 0 100 100) (byExactNode tree) 1f
+                    |> Option.map removeUis
+                    |> Option.get
+                    
+                let window =
+                    rendered
+                    |> List.item 3
+                    
+                match window with
+                | LayoutPiece.Window (wi, bo) ->
+                    ((Box.width wi.Definition.minSize) <= (Box.width bo) &&
+                    (Box.height wi.Definition.minSize) <= (Box.height bo))
+                    |> should be True
+                    
+            [<Test>]
+            member x.``window sizes aren't increased in both dimensions when only one needs to grow`` () =
+                let rendered =
+                    tree
+                    |> layout (Box.create 0 0 100 100) (byExactNode tree) 1f
+                    |> Option.map removeUis
+                    |> Option.get
+                    
+                let window =
+                    rendered
+                    |> List.item 3
+                    
+                match window with
+                | LayoutPiece.Window (_, bo) ->
+                    (Box.height bo)
+                    |> should equal 50
+                    
+                
