@@ -81,6 +81,17 @@ module TreeAddOperation =
         else
             None
             
+    let addAndTabActiveWindow (w: Window.Definition.T) =
+        let splitWithNewWindow (activeWindow: T) =
+            container
+                (Container.create "tabbed" |> Container.withExclusive true)
+                [activeWindow; window w]
+            
+        Tree.mapDisplay
+            hasLastActiveWindow
+            (Display.mapActiveLayout
+                 (replaceNode byLastActiveWindow splitWithNewWindow))
+            
     let addAndSplitActiveWindow (ratio: float32) (w: Window.Definition.T) =
         let splitWithNewWindow (activeWindow: T) =
             let weight = Weights.weight activeWindow

@@ -26,6 +26,9 @@ module SpecialCase =
         let weight (h, f) (window: Window.Definition.T) =
             {window with weight = Weight.create h f }
             
+        let minimumSize w h (window: Window.Definition.T) =
+            {window with minSize = Box.create 0 0 w h}
+            
         let mark m (window: Window.Definition.T) =
             {window with marks = [m]}
             

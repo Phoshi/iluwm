@@ -21,16 +21,16 @@ open EventRunner
 
 let execute (settings: Settings.T) =
     let loggerFor = Logger.log settings.workingDirectoryPath settings.logLevel
-    
+
     let handlerFromConfig handler otherwise firstOf =
         let configured = settings.windowEventHandlers
                             |> Option.bind handler
-                            
+
         if Option.isSome configured then
             (Option.get configured) firstOf
         else
             otherwise
-            
+
     let onWindowCreated (firstOf: WindowHandler) =
         handlerFromConfig
             (fun weh -> weh.created)
@@ -39,14 +39,14 @@ let execute (settings: Settings.T) =
                     switchToTagIfWindowAlreadyExists
                     logWindow "New window" (loggerFor "LogWindow")
                     handleSpecialCases settings.specialCases
-                    addAfterActiveWindow 
+                    addAfterActiveWindow
                     logWindow "Couldn't find active window..." (loggerFor "LogWindow")
                     addToRootOfClosestDisplay
                     logWindow "Couldn't even find active display..." (loggerFor "LogWindow")
                     addToRootOfPrimaryDisplay
             })
             firstOf
-        
+
     let onWindowDestroyed (firstOf: WindowHandler) =
         handlerFromConfig
             (fun weh -> weh.destroyed)
@@ -57,7 +57,7 @@ let execute (settings: Settings.T) =
                 removeWindow
             })
             firstOf
-        
+
     let onWindowResized _ (firstOf: WindowHandler) =
         handlerFromConfig
             (fun weh -> weh.resized)
@@ -66,7 +66,7 @@ let execute (settings: Settings.T) =
                 updateWindow size
             })
             firstOf
-            
+
     let onTitleChange _ (firstOf: WindowHandler) =
         handlerFromConfig
             (fun weh -> weh.titleChanged)
@@ -75,7 +75,7 @@ let execute (settings: Settings.T) =
                 updateWindow title
             })
             firstOf
-            
+
     let onMinimizeChange (firstOf: WindowHandler) =
         handlerFromConfig
             (fun weh -> weh.minimiseChanged)
@@ -84,7 +84,7 @@ let execute (settings: Settings.T) =
                 updateWindow minimised
             })
             firstOf
-        
+
     let onMaximizeChange (firstOf: WindowHandler) =
         handlerFromConfig
             (fun weh -> weh.maximiseChanged)
@@ -93,7 +93,7 @@ let execute (settings: Settings.T) =
                 updateWindow maximised
             })
             firstOf
-        
+
     let onActiveChange (firstOf: WindowHandler) =
         handlerFromConfig
             (fun weh -> weh.activeChanged)
@@ -102,29 +102,29 @@ let execute (settings: Settings.T) =
                 updateTree [updateLastWindowMark; (updateWindowActive); (updateWindowLastActive); (updateSelected); unmarkActiveWindow]
             })
             firstOf
-        
+
     let onActiveDisplayChange (d: string) r =
         updateActiveDisplay d r
-        
-        
+
+
     let availableDisplays = Initialisation.DisplayInitialisation.displays (loggerFor "Displays") settings
-        
+
     let mutable twimeRoot =
         TwimeRoot.create
-            availableDisplays 
+            availableDisplays
             (Initialisation.DisplayInitialisation.tagDefinitions settings availableDisplays)
-    
+
     let persist tree =
         let serializedLayout = Tree.save tree
         System.IO.File.WriteAllText(settings.workingDirectoryPath + "last.tree", serializedLayout)
-    
+
     let teardown tree =
         let showWindow ((_, w): LayoutTree.WindowNode) =
             Integration.Win32.WindowMove.batchVisibilityChange
                 [(w.Definition, w.Definition.size)]
                 []
             ()
-        
+
         tree
         |> TwimeRoot.displays
         |> List.collect Display.tags
@@ -133,21 +133,21 @@ let execute (settings: Settings.T) =
                         showWindow
                         (fun _ -> ()))
         |> ignore
-        
-        
+
+
     Message.message "Starting up"
     |> Message.debug
     |> loggerFor "Startup"
-        
+
     if System.IO.File.Exists(settings.workingDirectoryPath + "last.tree") then
         let treeToLoad =
             Tree.load (System.IO.File.ReadAllText (settings.workingDirectoryPath + "last.tree"))
             |> Option.bind (fun ttl -> LoadTreeOperation.load ttl twimeRoot)
-            
+
         if Option.isSome treeToLoad then
             twimeRoot <- Option.get treeToLoad
-        
-        
+
+
     let lock = new Object();
     use eventRunner = new EventRunner.T(
                         lock,
@@ -184,9 +184,9 @@ let execute (settings: Settings.T) =
                              settings.uiConfig
                              (BatchRenderer.Settings.create true BatchRenderer.Settings.Batch))
                         )
-   
+
     let app = WpfRigging.beginWpf ()
-    
+
     let poller = Integration.Poller.create
                      (Integration.WindowTracker.tracker
                         lock
@@ -204,7 +204,7 @@ let execute (settings: Settings.T) =
                         eventRunner.batchComplete
                         eventRunner.forceRender)
                      100.0
-                     
+
     NamedPipeIPCServer.runIpcServer
         (loggerFor "iluwmipc")
         "iluwmipc"
@@ -212,8 +212,8 @@ let execute (settings: Settings.T) =
             (settings.hotkeys)
             (eventRunner.transformAsync UserDriven))
     |> ignore
-    
-        
+
+
     NamedPipeIPCServer.runIpcServer
         (loggerFor "iluwmipcquery")
         "iluwmipcquery"
@@ -223,16 +223,16 @@ let execute (settings: Settings.T) =
             (fun () -> NamedPipeIPCServer.listTags eventRunner)
             (fun () -> NamedPipeIPCServer.listMarks eventRunner))
     |> ignore
-                     
+
     WpfRigging.runWpf app |> ignore
-                     
+
     Integration.MessagePump.pumpQueue ()
-    
+
     0 // return an integer exit code
 
 [<EntryPoint; STAThread>]
 let main argv =
     let settings = SettingsReader.load "Settings.fsx"
     execute settings
-    
-    
+
+

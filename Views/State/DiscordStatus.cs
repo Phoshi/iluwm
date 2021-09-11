@@ -44,14 +44,18 @@ namespace Views.State
         {
             if (File.Exists(_path))
             {
-                var contents = File.ReadAllText(_path);
-                if (string.IsNullOrEmpty(contents))
+                using (var fileStream = new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var reader = new StreamReader(fileStream))
                 {
-                    //the plugin status writer seems to produce blank files sometimes :(
-                    return;
-                }
+                    var contents = reader.ReadToEnd();
+                    if (string.IsNullOrEmpty(contents))
+                    {
+                        //the plugin status writer seems to produce blank files sometimes :(
+                        return;
+                    }
 
-                Status = JsonConvert.DeserializeObject<Status>(contents);
+                    Status = JsonConvert.DeserializeObject<Status>(contents);
+                }
             }
         }
 

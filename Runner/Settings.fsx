@@ -192,8 +192,6 @@
                     trayButton
                     layoutIndicator
                     Spacer.barComponent (coloured "#3b4252" "#123123" |> andPadded 5 5 |> andAligned Styling.Right)
-                    Shell.barComponent (coloured "#ebcb8b" "#2e3440" |> andAligned Styling.Right) @"-file ""e:\Dropbox\the library\the library\.scripts\count-todos.ps1"" -type ""#todo/soon"""
-                    Shell.barComponent (coloured "#d08770" "#2e3440" |> andAligned Styling.Right) @"-file ""e:\Dropbox\the library\the library\.scripts\count-todos.ps1"" -type ""#todo/today"""
                     Shell.barComponent (coloured "#bf616a" "#2e3440" |> andAligned Styling.Right) @"-file ""e:\Dropbox\the library\the library\.scripts\count-deferred.ps1"""
                     Spacer.barComponent (coloured "#3b4252" "#123123" |> andPadded 5 5 |> andAligned Styling.Right)
                     NowPlaying.barComponent (coloured "#5e81ac" "#d8dee9" |> andAligned Styling.Right)
@@ -225,9 +223,10 @@
             | _ -> 25
             
         let specialCases = [
-            executable "discord" => transform (properties [weight (0.5, 0.5); mark "D"]) (addToSidebarOnDisplay SidebarLeft "\\\\.\DISPLAY1")
-            executable "slack" => transform (properties [weight (0.5, 0.5); mark "S"]) (addToSidebarOnDisplay SidebarLeft "\\\\.\DISPLAY1")
-            executable "Telegram" => transform (mark "T") addAfterActiveWindow
+            executable "discord" => transform (properties [weight (0.5, 0.5); mark "D"; minimumSize 0 0]) (addToSidebarOnDisplay SidebarLeft "\\\\.\DISPLAY1")
+            executable "slack" => transform (properties [weight (0.5, 0.5); mark "S"]) (addToTag "slack")
+            executable "Telegram" => transform (mark "T") (addToTag "2")
+            executable "nvim-qt" => addAndTabActiveWindow
             executable "KeePass" => addAndSplitActiveWindow (60.0f/40.0f)
             executable "KeePassXC" => addAndSplitActiveWindow (60.0f/40.0f)
             executable "ConEmu64" => addAndSplitActiveWindow (70.0f/30.0f)
